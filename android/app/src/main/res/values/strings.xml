@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Gráficos FX</string>
-    <string name="title_activity_main">Gráficos FX</string>
-    <string name="package_name">com.tem.graficosfx</string>
-    <string name="custom_url_scheme">com.tem.graficosfx</string>
+    <string name="app_name">Rotas de Bike</string>
+    <string name="title_activity_main">Rotas de Bike</string>
+    <string name="package_name">com.tem.rotasbike</string>
+    <string name="custom_url_scheme">com.tem.rotasbike</string>
 </resources>

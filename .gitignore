@@ -2,3 +2,8 @@ node_modules/
 dist/
 .DS_Store
 android/app/src/main/assets/public/
+planejamento/geo/
+planejamento/towns/
+planejamento/gpx/
+planejamento/data.json
+planejamento/__pycache__/

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ícone do Rotas de Bike (camada da frente; fundo #15211C). Os PNGs do Android saem daqui. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#15211C"/><g transform="translate(512 512) scale(0.8) translate(-512 -556)">
+<g fill="none" stroke="#F3EFE4" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="330" cy="604" r="124" stroke-width="30"/>
+  <circle cx="694" cy="604" r="124" stroke-width="30"/>
+  <path d="M330 604 L482 604 L444 440 Z M444 440 L652 440 L666 490 L482 604 M666 490 L694 604" stroke-width="32"/>
+  <path d="M444 440 L436 402 M392 398 Q432 386 478 396" stroke-width="32"/>
+  <path d="M652 440 L644 400 L604 400 M644 400 L690 392" stroke-width="30"/>
+  <path d="M482 604 L512 646 M494 648 L532 648" stroke-width="24"/>
+  <path d="M300 482 L452 482" stroke-width="22"/>
+</g>
+<rect x="250" y="492" width="118" height="110" rx="26" fill="#FF5FA2" stroke="#F3EFE4" stroke-width="22"/>
+<path d="M276 532 L342 532" stroke="#15211C" stroke-width="16" stroke-linecap="round"/>
+<circle cx="330" cy="604" r="15" fill="#F3EFE4"/><circle cx="694" cy="604" r="15" fill="#F3EFE4"/>
+<circle cx="482" cy="604" r="26" fill="none" stroke="#F3EFE4" stroke-width="18"/></g></svg>

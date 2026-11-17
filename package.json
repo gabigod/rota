@@ -1,7 +1,7 @@
 {
-  "name": "graficos-fx",
+  "name": "rotas-de-bike",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,11 @@
     "@capacitor/android": "8.6.0",
     "@capacitor/app": "8.1.2",
     "@capacitor/core": "8.6.0",
-    "lightweight-charts": "5.2.1",
-    "pinets": "0.13.1"
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/share": "8.0.3",
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/figtree": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0"
   },
   "devDependencies": {
     "@capacitor/cli": "8.6.0",

@@ -1,10 +1,15 @@
 {
-  "appId": "com.tem.graficosfx",
-  "appName": "Gráficos FX",
+  "appId": "com.tem.rotasbike",
+  "appName": "Rotas de Bike",
   "webDir": "dist",
-  "android": { "allowMixedContent": false },
+  "android": {
+    "allowMixedContent": false
+  },
   "plugins": {
-    "CapacitorHttp": { "enabled": true },
-    "SystemBars": { "insetsHandling": "css", "style": "DARK" }
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DEFAULT",
+      "initialViewportFitValueHint": "cover"
+    }
   }
 }

@@ -1,58 +1,39 @@
-# Gráficos FX
+# Rotas de Bike
 
-Um app Android de gráficos parecido com o TradingView, com preços ao vivo da cTrader (Open API) ou da OANDA (v20).
+App Android para planejar a volta de bike pela América do Sul. A saída é em Tanque Novo (BA), em janeiro de 2027. É o mesmo app de rotas publicado no Claude, empacotado para o celular e o tablet.
 
 ## O que o app faz
 
-- **Gráfico:** candles, candles vazados, Heikin Ashi, barras, linha e área. Timeframes de 1m até mensal. Ao rolar para a esquerda, carrega mais histórico.
-- **Preço ao vivo:** consulta a OANDA a cada segundo. As barras diárias fecham às 17h de Nova York.
-- **Scripts Pine (v5/v6):** cole um código do TradingView e ele roda no app. O motor é o PineTS. Funcionam:
-  - `plot`, `plotshape`, `plotchar`, `hline`, `fill` e `bgcolor`
-  - `line.new`, `box.new` e `label.new`
-  - painel separado quando o script usa `overlay=false`
-  - `request.security` com outros ativos e timeframes, usando dados da OANDA
-  - entradas (`input.*`), editáveis em "Ajustes"
-- **Desenhos:** linha de tendência, raio, linha estendida, linhas horizontal e vertical, raio horizontal, retângulo, Fibonacci, posição comprada e vendida (com pips e R:R), régua e texto. Têm ímã no OHLC e ficam salvos por ativo.
-- **Replay de barras:**
-  - escolha a barra inicial tocando no gráfico, ou vá direto para uma data
-  - avance ou volte uma barra por vez
-  - play/pause com velocidade de 0,5x a 10x
-  - os indicadores, inclusive os de `request.security`, só enxergam o passado
-- **Lista de ativos** com preço e variação do dia, busca por todos os instrumentos da sua conta, tema escuro e claro, e backup de desenhos e scripts.
+- **Mapa da rota inteira:** 26.535 km de bike por 7 países. Mostra os bate-voltas, as travessias de barco e os trechos aproximados.
+- **Paradas por estado ou país:** cada parada tem descrição, quanto de água levar até a próxima e as cidades no caminho. Você pode marcar as que já visitou.
+- **Perfil de altitude:** passe o dedo no gráfico para ver o km, a altitude e a parada mais próxima.
+- **Cronograma:** escolha a data de saída, o ritmo e quantos dias parado. O app calcula a data de cada parada, mostra os km de cada mês e avisa se cada lugar cai na época boa.
+- **Números da viagem:** seu progresso, os km de bike por país e os recordes da rota.
+- **GPX de cada trecho:** o botão **Baixar GPX** abre o menu de compartilhar do Android. Dali dá para salvar o arquivo em Arquivos ou no Drive, ou abrir direto no Organic Maps, OsmAnd, komoot ou Strava.
+- **Funciona sem internet.** Só os links do Google Maps precisam de rede.
 
-## Como gerar o APK (GitHub Actions)
+## Instalar no celular
 
-1. Crie um repositório no GitHub e envie esta pasta para ele (branch `main`).
-2. A cada envio, a aba **Actions** compila o app sozinha, em uns 5 minutos.
-3. O APK aparece em **Releases** como `GraficosFX.apk`. Abra essa página no celular, baixe e instale. O Android vai pedir para permitir a instalação de "fontes desconhecidas".
+1. Abra a página **Releases** deste repositório no celular.
+2. Baixe o `RotasDeBike.apk` e instale. O Android vai pedir para permitir a instalação de "fontes desconhecidas".
 
-O APK é sempre assinado com a mesma chave, que fica em `android/app/graficos-debug.keystore`. Por isso as versões novas instalam por cima da antiga sem apagar seus desenhos e scripts.
+O APK é sempre assinado com a mesma chave, que fica em `android/app/rotas-debug.keystore`. Por isso as versões novas instalam por cima sem apagar o que você marcou.
 
-## Conectar a cTrader
+## Como o APK é gerado
 
-1. Crie uma conta demo em ct.spotware.com.
-2. Em openapi.ctrader.com → Applications, crie um app e espere ficar ativo.
-3. Copie Client ID e Client Secret; no Playground, gere o Access token e o Refresh token.
-4. No app: ⚙️ → Fonte de preços: cTrader → preencha → Conectar.
+A cada envio para o branch `main`, o GitHub Actions compila o app em uns 3 a 5 minutos. O APK novo aparece em **Releases**.
 
-## Conectar a OANDA (só contas v20)
+## Onde fica cada coisa
 
-No app, vá em ⚙️ → Conta OANDA, cole o token da API e toque em **Conectar**. O token é criado no site da OANDA, em "Gerenciar acesso à API".
+| Pasta ou arquivo | O que é |
+|---|---|
+| `src/app.html` | A página do app: mapa, paradas, cronograma e números |
+| `dados/rota.json` | A rota: trajeto, paradas, perfil de altitude, água e épocas |
+| `public/gpx/` | Um GPX para cada trecho e um para a rota inteira |
+| `src/native.js` | A ponte com o Android: GPX, botão voltar e fontes |
+| `planejamento/` | Os scripts que geram `dados/rota.json` e os GPX a partir das rotas do komoot. Veja `planejamento/LEIAME.md` |
+| `assets/icone.svg` | O ícone do app |
 
-O token fica salvo só no celular. Nunca coloque o token no código nem no GitHub.
+## E o Gráficos FX?
 
-Sem token, o app funciona em modo demonstração, com preços simulados.
-
-## Desenvolvimento
-
-```bash
-npm install
-npm run dev        # abre no navegador (modo demonstração)
-npm run sync       # monta o app e copia para o projeto Android
-```
-
-## Licenças
-
-- Os gráficos usam o TradingView Lightweight Charts™ (Apache-2.0). O link de atribuição precisa continuar visível no gráfico.
-- Os scripts Pine rodam com o PineTS (AGPL-3.0). Se você distribuir o app para outras pessoas, o código-fonte precisa estar disponível sob a mesma licença.
-- O app não usa marca nem logo do TradingView.
+O app de gráficos que ficava aqui foi guardado inteiro no branch [`graficos-fx`](../../tree/graficos-fx). O Rotas de Bike é um app separado, com outro ID (`com.tem.rotasbike`), então o Gráficos FX que já está instalado no celular continua funcionando, inclusive com os links do Diário de Trades.
