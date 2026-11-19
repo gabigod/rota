@@ -2,7 +2,7 @@ name: Gerar APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'perf/fluidez-e-funcoes']
   workflow_dispatch:
 
 permissions:
@@ -53,8 +53,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="rotas-v1.0.${{ github.run_number }}"
-          gh release create "$TAG" RotasDeBike.apk \
-            --title "Rotas de Bike v1.0.${{ github.run_number }}" \
-            --notes "Baixe o arquivo RotasDeBike.apk no celular e instale. Versão gerada a partir do commit ${GITHUB_SHA::7}." \
-            --latest
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            TAG="rotas-v1.0.${{ github.run_number }}"
+            gh release create "$TAG" RotasDeBike.apk \
+              --title "Rotas de Bike v1.0.${{ github.run_number }}" \
+              --notes "Build da versão principal."
+              --latest
+          else
+            echo "Build de teste na branch ${GITHUB_REF_NAME}; APK disponível nos Actions artifacts."
+          fi
