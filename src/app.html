@@ -396,9 +396,11 @@ function setScope(k) {
 addEventListener('hashchange', () => { const h = location.hash.slice(1).toUpperCase(); setScope(ufBy[h] ? h : 'NE'); });
 
 /* ---------- mapa (Leaflet em canvas: leve no celular; com internet ganha ruas, relevo e satélite) ---------- */
-const LS_BASE = 'mapa-base-v1', LS_CYC = 'mapa-ciclo-v1';
+const LS_BASE = 'mapa-base-v2', LS_CYC = 'mapa-ciclo-v1';
 const isDark = () => { const t = document.documentElement.dataset.theme; return t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); };
 const BASES = {
+  ciclo: {nome: 'Bike completo', layers: () => [{url: 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', opt: {subdomains: 'abc', maxNativeZoom: 20, maxZoom: 19, attribution: '© OpenStreetMap · CyclOSM'}}]},
+  osm: {nome: 'Estradas', layers: () => [{url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', opt: {maxNativeZoom: 19, maxZoom: 19, attribution: '© OpenStreetMap'}}]},
   mapa: {nome: 'Mapa', layers: () => isDark()
     ? [{url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 16, maxZoom: 17, attribution: 'Esri, HERE, Garmin, OpenStreetMap'}},
        {url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 16, maxZoom: 17}}]
@@ -407,9 +409,9 @@ const BASES = {
   sat: {nome: 'Satélite', layers: () => [{url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 17, maxZoom: 17, attribution: 'Esri, Maxar, Earthstar'}}]},
   off: {nome: 'Sem internet'}
 };
-let base = 'mapa', cyc = false;
-try { base = localStorage.getItem(LS_BASE) || 'mapa'; cyc = localStorage.getItem(LS_CYC) === '1'; } catch (e) {}
-if (!BASES[base]) base = 'mapa';
+let base = 'ciclo', cyc = false;
+try { base = localStorage.getItem(LS_BASE) || 'ciclo'; cyc = localStorage.getItem(LS_CYC) === '1'; } catch (e) {}
+if (!BASES[base]) base = 'ciclo';
 const mapEl = document.getElementById('map');
 let map = null, vec = null, baseLayer = null, cycLayer = null, polyS = null, polyP = null, stopG = null, townG = null, curMk = null;
 let rHalo, rLine, aHalo, aLine, hiLine, latLines = [], boatLines = [];
@@ -475,7 +477,7 @@ document.getElementById('lbox').addEventListener('click', ev => {
 
 function layout() {
   if (map) { map.invalidateSize(); return; }
-  map = L.map(mapEl, {preferCanvas: true, zoomControl: false, attributionControl: true, zoomSnap: .25, minZoom: 2, maxZoom: 17, worldCopyJump: false});
+  map = L.map(mapEl, {preferCanvas: true, zoomControl: false, attributionControl: true, zoomSnap: .25, minZoom: 2, maxZoom: 19, worldCopyJump: false});
   map.attributionControl.setPrefix(false);
   map.fitBounds(routeBounds(), {paddingTopLeft: [24, 24], paddingBottomRight: [24, 96], animate: false});
   vec = L.canvas({padding: .4, tolerance: 10});
