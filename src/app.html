@@ -2,6 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
 /* Layout: mapa vetorial grande + caderno com abas (paradas, cronograma, números) ao lado; perfil de altitude embaixo do mapa */
 :root{
@@ -41,35 +42,21 @@ h1 span{color:var(--route)}
 .stat .v{font-family:var(--f-mono);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums}
 .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .mapwrap{position:relative;min-height:0;background:var(--sea);border-radius:14px;overflow:hidden;border:1px solid var(--line)}
-#map{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
-#map:active{cursor:grabbing}
-.state{fill:var(--land);stroke:var(--land-stroke);stroke-width:.8;vector-effect:non-scaling-stroke}
-.state.rota{fill:var(--land-ba);stroke:var(--land-stroke)}
-.state.cur{stroke:var(--muted);stroke-width:1.6}
-.country{fill:var(--land);stroke:var(--land-stroke);stroke-width:.8;vector-effect:non-scaling-stroke;opacity:.7}
-.slabel{font-family:var(--f-mono);font-size:11px;fill:var(--muted);letter-spacing:.12em;pointer-events:none}
-.slabel.pais{letter-spacing:.2em;font-size:10px}
-.route{fill:none;stroke:var(--route);stroke-width:3.2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.route-halo{fill:none;stroke:var(--halo);stroke-width:7;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.9}
-.route-hi{fill:none;stroke:var(--route);stroke-width:7;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.35}
-.route-aprox{fill:none;stroke:var(--route);stroke-width:3.2;stroke-dasharray:2 6;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.lateral{fill:none;stroke:var(--side);stroke-width:2.4;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
-.barco{fill:none;stroke:var(--side);stroke-width:2.4;stroke-dasharray:1 5;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.stop circle{fill:var(--panel);stroke:var(--route);stroke-width:2.2;vector-effect:non-scaling-stroke;cursor:pointer}
-.stop.lat circle{stroke:var(--side)}
-.stop.warn circle{stroke:var(--warn);fill:var(--panel)}
-.stop.big circle{fill:var(--route)}
-.stop.sel circle{fill:var(--ink);stroke:var(--panel)}
-.stop.done circle{stroke:var(--good)}
-.stop text{font-family:var(--f-body);font-weight:600;font-size:12px;fill:var(--ink);paint-order:stroke;stroke:var(--halo);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
-.stop.minor text{opacity:0;transition:opacity .15s}
-.zoomed .stop.minor text,.stop.sel text,.stop:hover text{opacity:1}
-.town{fill:var(--muted);stroke:var(--halo);stroke-width:1;vector-effect:non-scaling-stroke}
-.tlabel{font-family:var(--f-body);font-size:10px;fill:var(--muted);paint-order:stroke;stroke:var(--halo);stroke-width:3px;pointer-events:none;display:none}
-.zoomed2 .tlabel{display:block}
-.gtowns{display:none}
-.zoomed .gtowns{display:block}
-.cursor{fill:var(--ink);stroke:var(--panel);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+#map{width:100%;height:100%;display:block;isolation:isolate;background:var(--sea);font-family:var(--f-body)}
+#map.leaflet-container{font-size:12px}
+.leaflet-container .leaflet-tooltip.slbl{background:none;border:0;box-shadow:none;padding:0;font:600 12px var(--f-body);color:var(--ink);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo),0 0 2px var(--halo),0 0 5px var(--halo)}
+.leaflet-tooltip.slbl::before,.leaflet-tooltip.tlbl::before,.leaflet-tooltip.slabel::before{display:none}
+.leaflet-container .leaflet-tooltip.slbl.sel{font-size:13px;font-weight:800}
+.leaflet-container .leaflet-tooltip.tlbl{background:none;border:0;box-shadow:none;padding:0;font:500 10.5px var(--f-body);color:var(--muted);text-shadow:0 0 3px var(--halo),0 0 3px var(--halo),0 0 2px var(--halo)}
+.leaflet-container .leaflet-tooltip.slabel{background:none;border:0;box-shadow:none;padding:0;font:400 11px var(--f-mono);letter-spacing:.12em;color:var(--muted)}
+.leaflet-container .leaflet-tooltip.slabel.pais{font-size:10px;letter-spacing:.2em}
+.curdot{width:16px;height:16px;border-radius:50%;background:var(--ink);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--ink)}
+.leaflet-control-attribution{font-size:10px;background:color-mix(in srgb,var(--panel) 80%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--muted)}
+.lbox{position:absolute;left:10px;top:10px;z-index:1000;display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100% - 66px)}
+.lbox button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}
+.lbox button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.zbox,.legend{z-index:1000}
 .ufbar{flex-basis:100%;display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
 .ufbar button{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:baseline}
 .ufbar button small{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
@@ -219,7 +206,8 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
   </header>
 
   <div class="mapwrap">
-    <svg id="map" role="img" aria-label="Mapa da rota de bike pela América do Sul"></svg>
+    <div id="map" role="application" aria-label="Mapa da rota de bike pela América do Sul"></div>
+    <div class="lbox" id="lbox" role="group" aria-label="Tipo de mapa"></div>
     <div class="zbox">
       <button class="zbtn" id="zin" aria-label="Aproximar">+</button>
       <button class="zbtn" id="zout" aria-label="Afastar">−</button>
@@ -269,6 +257,7 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
   </aside>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script>
 const DATA = __DATA__;
@@ -406,50 +395,116 @@ function setScope(k) {
 }
 addEventListener('hashchange', () => { const h = location.hash.slice(1).toUpperCase(); setScope(ufBy[h] ? h : 'NE'); });
 
-/* ---------- map ---------- */
-const svg = d3.select('#map');
-const gRoot = svg.append('g');
-const gCountries = gRoot.append('g'), gStates = gRoot.append('g'), gLabels = gRoot.append('g'), gRoute = gRoot.append('g'), gTowns = gRoot.append('g').attr('class', 'gtowns'), gStops = gRoot.append('g');
-const proj = d3.geoMercator();
-const path = d3.geoPath(proj);
-let W = 0, H = 0, curK = 1;
-const routeGeo = {type: 'MultiLineString', coordinates: DATA.linha};
+/* ---------- mapa (Leaflet em canvas: leve no celular; com internet ganha ruas, relevo e satélite) ---------- */
+const LS_BASE = 'mapa-base-v1', LS_CYC = 'mapa-ciclo-v1';
+const isDark = () => { const t = document.documentElement.dataset.theme; return t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); };
+const BASES = {
+  mapa: {nome: 'Mapa', url: () => isDark() ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', opt: {subdomains: 'abcd', maxZoom: 19, attribution: '© OpenStreetMap · © CARTO'}},
+  relevo: {nome: 'Relevo', url: () => 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', opt: {subdomains: 'abc', maxZoom: 17, attribution: '© OpenStreetMap · OpenTopoMap'}},
+  sat: {nome: 'Satélite', url: () => 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', opt: {maxZoom: 18, attribution: 'Esri, Maxar, Earthstar'}},
+  off: {nome: 'Sem internet'}
+};
+let base = 'mapa', cyc = false;
+try { base = localStorage.getItem(LS_BASE) || 'mapa'; cyc = localStorage.getItem(LS_CYC) === '1'; } catch (e) {}
+if (!BASES[base]) base = 'mapa';
+const mapEl = document.getElementById('map');
+let map = null, vec = null, baseLayer = null, cycLayer = null, polyS = null, polyP = null, stopG = null, townG = null, curMk = null;
+let rHalo, rLine, aHalo, aLine, hiLine, latLines = [], boatLines = [];
+const stopM = {}, townM = [];
+let C = null, lastZ = -1;
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function colors() {
+  if (!C) C = {route: cssv('--route'), halo: cssv('--halo'), side: cssv('--side'), panel: cssv('--panel'), ink: cssv('--ink'), good: cssv('--good'), warn: cssv('--warn'), land: cssv('--land'), landBa: cssv('--land-ba'), stroke: cssv('--land-stroke'), muted: cssv('--muted')};
+  return C;
+}
+const ll = c => [c[1], c[0]];
+const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const routeLL = DATA.linha.map(l => l.map(ll));
+const routeBounds = () => L.latLngBounds(routeLL.flat());
+
+function polyStyle(f) {
+  const c = colors(), off = base === 'off', sg = f.properties.sigla;
+  if (!sg) return {color: c.stroke, weight: .8, opacity: off ? 1 : 0, fillColor: c.land, fillOpacity: off ? .7 : 0};
+  const rota = ROUTE_UF.has(sg), cur = sg === scope;
+  return {color: cur ? c.muted : c.stroke, weight: cur ? 2 : .8, opacity: off || cur ? 1 : .55,
+    fillColor: off ? (rota ? c.landBa : c.land) : c.route, fillOpacity: off ? 1 : (rota ? .07 : 0)};
+}
+function styleStates() { if (polyS) polyS.setStyle(polyStyle); if (polyP) polyP.setStyle(polyStyle); }
+function paintRoute() {
+  const c = colors();
+  rHalo.setStyle({color: c.halo}); rLine.setStyle({color: c.route});
+  aHalo.setStyle({color: c.halo}); aLine.setStyle({color: c.route});
+  hiLine.setStyle({color: c.route});
+  latLines.forEach(l => l.setStyle({color: c.side})); boatLines.forEach(l => l.setStyle({color: c.side}));
+  townM.forEach(t => t.setStyle({color: c.halo, fillColor: c.muted}));
+}
+function setBase(k, keep) {
+  base = k;
+  if (!keep) { try { localStorage.setItem(LS_BASE, k); } catch (e) {} }
+  if (baseLayer) { map.removeLayer(baseLayer); baseLayer = null; }
+  if (k !== 'off') {
+    const b = BASES[k];
+    baseLayer = L.tileLayer(b.url(), Object.assign({keepBuffer: 3, updateWhenZooming: false, updateWhenIdle: true, crossOrigin: false}, b.opt)).addTo(map);
+    baseLayer.bringToBack();
+  }
+  mapEl.classList.toggle('offline', k === 'off');
+  styleStates();
+  [polyS, polyP].forEach(g => g && g.eachLayer(p => {
+    if (k === 'off') { const d = p.feature; p.bindTooltip(d.properties.sigla || d.properties.nome.toUpperCase(), {permanent: true, direction: 'center', className: 'slabel' + (d.properties.sigla ? '' : ' pais')}); }
+    else p.unbindTooltip();
+  }));
+  renderSwitch();
+}
+function setCyc(on) {
+  cyc = on;
+  try { localStorage.setItem(LS_CYC, on ? '1' : '0'); } catch (e) {}
+  if (cycLayer) { map.removeLayer(cycLayer); cycLayer = null; }
+  if (on) cycLayer = L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {maxZoom: 18, opacity: .85, zIndex: 20, updateWhenZooming: false, attribution: 'Waymarked Trails'}).addTo(map);
+  renderSwitch();
+}
+function renderSwitch() {
+  document.getElementById('lbox').innerHTML = Object.entries(BASES).map(([k, b]) => `<button data-base="${k}" aria-pressed="${base === k}">${b.nome}</button>`).join('')
+    + `<button data-cyc="1" aria-pressed="${cyc}" title="Mostra ciclovias e rotas de bike (precisa de internet)">Ciclovias</button>`;
+}
+document.getElementById('lbox').addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.base) setBase(b.dataset.base); else setCyc(!cyc);
+});
 
 function layout() {
-  const r = svg.node().getBoundingClientRect();
-  W = r.width; H = r.height;
-  svg.attr('viewBox', `0 0 ${W} ${H}`);
-  proj.fitExtent([[30, 30], [W - 30, H - 50]], routeGeo);
-  gCountries.selectAll('path').data(DATA.paises).join('path').attr('class', 'country').attr('d', path);
-  gStates.selectAll('path').data(DATA.estados).join('path').attr('d', path);
-  styleStates();
-  gLabels.selectAll('text').data([...DATA.estados, ...DATA.paises]).join('text').attr('class', d => d.properties.sigla ? 'slabel' : 'slabel pais').attr('text-anchor', 'middle')
-    .text(d => d.properties.sigla || d.properties.nome.toUpperCase()).attr('transform', d => { const c = path.centroid(d); return `translate(${c[0]},${c[1]})`; });
-  gRoute.selectAll('*').remove();
-  gRoute.append('path').attr('class', 'route-halo').attr('d', path(routeGeo));
-  gRoute.append('path').attr('class', 'route').attr('d', path(routeGeo));
-  const ap = {type: 'MultiLineString', coordinates: DATA.linha_aprox};
-  gRoute.append('path').attr('class', 'route-halo').attr('d', path(ap));
-  gRoute.append('path').attr('class', 'route-aprox').attr('d', path(ap));
-  for (const c of Object.values(DATA.laterais)) gRoute.append('path').attr('class', 'lateral').attr('d', path({type: 'LineString', coordinates: c}));
-  for (const c of DATA.barcos) gRoute.append('path').attr('class', 'barco').attr('d', path({type: 'LineString', coordinates: c}));
-  gRoute.append('path').attr('class', 'route-hi').attr('id', 'hi');
-  gRoute.append('circle').attr('class', 'cursor').attr('id', 'cur').attr('r', 5).attr('hidden', true);
-  const tg = gTowns.selectAll('g').data(DATA.cidades || []).join(en => { const e = en.append('g'); e.append('circle').attr('class', 'town'); e.append('text').attr('class', 'tlabel').attr('x', 5).attr('y', 3); return e; });
-  tg.select('text').text(d => d[0]);
-  placeTowns();
+  if (map) { map.invalidateSize(); return; }
+  map = L.map(mapEl, {preferCanvas: true, zoomControl: false, attributionControl: true, zoomSnap: .25, minZoom: 2, maxZoom: 17, worldCopyJump: false});
+  map.attributionControl.setPrefix(false);
+  map.fitBounds(routeBounds(), {paddingTopLeft: [24, 24], paddingBottomRight: [24, 96], animate: false});
+  vec = L.canvas({padding: .4, tolerance: 10});
+  const o = {renderer: vec, interactive: false, smoothFactor: 1.6, lineJoin: 'round', lineCap: 'round'};
+  polyP = L.geoJSON(DATA.paises, {renderer: vec, interactive: false, style: polyStyle}).addTo(map);
+  polyS = L.geoJSON(DATA.estados, {renderer: vec, interactive: false, style: polyStyle}).addTo(map);
+  rHalo = L.polyline(routeLL, Object.assign({weight: 7, opacity: .9}, o)).addTo(map);
+  rLine = L.polyline(routeLL, Object.assign({weight: 3.6}, o)).addTo(map);
+  const apLL = DATA.linha_aprox.map(l => l.map(ll));
+  aHalo = L.polyline(apLL, Object.assign({weight: 7, opacity: .9}, o)).addTo(map);
+  aLine = L.polyline(apLL, Object.assign({weight: 3.2, dashArray: '2 7'}, o)).addTo(map);
+  latLines = Object.values(DATA.laterais).map(c => L.polyline(c.map(ll), Object.assign({weight: 2.6, dashArray: '6 5'}, o)).addTo(map));
+  boatLines = DATA.barcos.map(c => L.polyline(c.map(ll), Object.assign({weight: 2.8, dashArray: '1 7'}, o)).addTo(map));
+  hiLine = L.polyline([], Object.assign({weight: 9, opacity: .35}, o)).addTo(map);
+  townG = L.layerGroup();
+  (DATA.cidades || []).forEach(d => { const m = L.circleMarker([d[2], d[1]], {renderer: vec, radius: 2.6, weight: 1, fillOpacity: 1, interactive: false}); m._nome = d[0]; townM.push(m); townG.addLayer(m); });
+  stopG = L.layerGroup().addTo(map);
+  stops.forEach(s => {
+    const m = L.circleMarker([s.lat, s.lon], {renderer: vec, radius: 5});
+    m.on('click', () => { if (scope !== 'NE' && s.uf !== scope) { scope = s.uf; renderHeader(); styleStates(); } if (tab !== 'paradas') setTab('paradas'); select(s.id, true); });
+    stopM[s.id] = m; stopG.addLayer(m);
+  });
+  paintRoute();
+  map.on('moveend', refreshLabels);
+  setBase(base, true); setCyc(cyc);
+  new ResizeObserver(() => map.invalidateSize()).observe(mapEl);
+  const recolor = () => { C = null; paintRoute(); styleStates(); drawStops(); setBase(base, true); };
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor);
+  new MutationObserver(recolor).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
   drawStops(); drawLeg();
-}
-function placeTowns() {
-  gTowns.selectAll('g').attr('transform', d => { const p = proj([d[1], d[2]]); return `translate(${p[0]},${p[1]}) scale(${1 / curK})`; });
-  gTowns.selectAll('circle').attr('r', 2.4);
-}
-function styleStates() {
-  gStates.selectAll('path').attr('class', d => 'state' + (ROUTE_UF.has(d.properties.sigla) ? ' rota' : '') + (d.properties.sigla === scope ? ' cur' : ''));
-}
-function stopClass(s) {
-  return 'stop' + (s.lateral ? ' lat' : '') + (s.tipo === 'Atenção' ? ' warn' : '') + (BIG.has(s.tipo) ? ' big' : '') + ((scope === 'NE' ? OV.has(s.id) : MAJOR.has(s.id)) || (scope !== 'NE' && s.uf === scope && BIG.has(s.tipo)) ? '' : ' minor')
-    + (selected === s.id ? ' sel' : '') + (done.has(s.id) ? ' done' : '');
+  requestAnimationFrame(() => { map.invalidateSize(); if (scope === 'NE') map.fitBounds(routeBounds(), {paddingTopLeft: [24, 24], paddingBottomRight: [24, 96], animate: false}); else fitScope(); });
 }
 const LEFT = new Set(['capao', 'pratinha', 'livramento', 'paramirim', 'tanque-novo', 'mucuge', 'rio-de-contas']);
 function labelPos(d) {
@@ -465,59 +520,74 @@ function labelPos(d) {
   return [10, 4, 'start'];
 }
 const short = n => n.replace('Livramento de Nossa Senhora', 'Livramento').replace('Gruta da Pratinha e Lapa Doce', 'Pratinha').replace('São José da Coroa Grande', 'S. J. Coroa Grande');
-function tf(d) { const p = proj([d.lon, d.lat]); return `translate(${p[0]},${p[1]}) scale(${1 / curK})`; }
+function stopStyle(s) {
+  const c = colors(), big = BIG.has(s.tipo), sel = selected === s.id;
+  const stroke = done.has(s.id) ? c.good : s.lateral ? c.side : s.tipo === 'Atenção' ? c.warn : c.route;
+  const z = map ? map.getZoom() : 4, zb = z < 5 ? 0 : z < 8 ? 1 : 2;
+  return {radius: (big ? [4.5, 6, 7] : [3, 4.5, 5.5])[zb], color: sel ? c.panel : stroke, weight: sel ? 3 : [1.6, 2.2, 2.4][zb], opacity: 1, fillColor: sel ? c.ink : big ? c.route : c.panel, fillOpacity: 1};
+}
+function labelTier(s) {
+  if (scope === 'NE' && OV.has(s.id)) return 3.5;
+  if (scope === 'NE' ? MAJOR.has(s.id) : (MAJOR.has(s.id) || (s.uf === scope && BIG.has(s.tipo)))) return 5;
+  return 8;
+}
+function setLabel(m, s, want) {
+  const cls = 'slbl' + (selected === s.id ? ' sel' : '') + (BIG.has(s.tipo) ? ' big' : '');
+  if (want && (!m._lb || m._lc !== cls)) {
+    if (m._lb) m.unbindTooltip();
+    const [x, y] = labelPos(s), dir = y < 0 ? 'top' : x === 0 ? 'bottom' : x < 0 ? 'left' : 'right';
+    m.bindTooltip(short(s.nome), {permanent: true, direction: dir, offset: dir === 'top' ? [0, -7] : dir === 'bottom' ? [0, 7] : dir === 'left' ? [-7, 0] : [7, 0], className: cls});
+    m._lb = true; m._lc = cls;
+  } else if (!want && m._lb) { m.unbindTooltip(); m._lb = false; }
+}
+function labelStops() {
+  const z = map.getZoom();
+  for (const s of stops) setLabel(stopM[s.id], s, selected === s.id || z >= labelTier(s));
+}
+function refreshLabels() {
+  const z = map.getZoom();
+  if (z !== lastZ) {
+    if (lastZ < 0 || (z < 5) !== (lastZ < 5) || (z < 8) !== (lastZ < 8)) for (const s of stops) stopM[s.id].setStyle(stopStyle(s));
+    lastZ = z; labelStops();
+    if (z >= 7) { if (!map.hasLayer(townG)) townG.addTo(map); stopG.bringToFront && stopG.eachLayer(m => m.bringToFront()); }
+    else if (map.hasLayer(townG)) map.removeLayer(townG);
+  }
+  if (z >= 9) {
+    const b = map.getBounds().pad(.1);
+    townM.forEach(t => { const want = b.contains(t.getLatLng()); if (want && !t._lb) { t.bindTooltip(t._nome, {permanent: true, direction: 'right', offset: [4, 0], className: 'tlbl'}); t._lb = true; } else if (!want && t._lb) { t.unbindTooltip(); t._lb = false; } });
+  } else townM.forEach(t => { if (t._lb) { t.unbindTooltip(); t._lb = false; } });
+}
 function drawStops() {
-  const g = gStops.selectAll('g.stop').data(stops, d => d.id).join(en => {
-    const e = en.append('g'); e.append('circle'); e.append('text');
-    e.on('click', (ev, d) => { if (scope !== 'NE' && d.uf !== scope) { scope = d.uf; renderHeader(); styleStates(); } if (tab !== 'paradas') setTab('paradas'); select(d.id, true); });
-    return e;
-  });
-  g.attr('class', stopClass).attr('transform', tf);
-  g.select('circle').attr('r', d => BIG.has(d.tipo) ? 6 : 4.5);
-  g.select('text').text(d => short(d.nome)).each(function (d) { const [x, y, a] = labelPos(d); d3.select(this).attr('x', x).attr('y', y).attr('text-anchor', a); });
-  g.sort((a, b) => (selected === a.id) - (selected === b.id));
+  if (!map) return;
+  for (const s of stops) stopM[s.id].setStyle(stopStyle(s));
+  if (selected && stopM[selected]) stopM[selected].bringToFront();
+  lastZ = -1; refreshLabels();
 }
-const zoom = d3.zoom().scaleExtent([1, 60]).on('zoom', ev => {
-  curK = ev.transform.k;
-  gRoot.attr('transform', ev.transform);
-  document.getElementById('app').classList.toggle('zoomed', curK > 4.5);
-  gStops.selectAll('g.stop').attr('transform', tf);
-  placeTowns();
-  document.getElementById('app').classList.toggle('zoomed2', curK > 9);
-  gLabels.selectAll('text').style('font-size', d => (d.properties.sigla ? 11 : 10) / curK + 'px');
-  d3.select('#cur').attr('r', 5 / curK);
-});
-svg.call(zoom).on('dblclick.zoom', null);
-const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-function frame(bounds, ms = 650, fill = 0.82) {
-  const [[x0, y0], [x1, y1]] = bounds;
-  const k = Math.min(60, fill / Math.max((x1 - x0) / W, (y1 - y0) / H, 1e-6));
-  const t = d3.zoomIdentity.translate(W / 2, H / 2).scale(Math.max(1, k)).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
-  svg.transition().duration(rm() ? 0 : ms).call(zoom.transform, t);
-}
-function boundsOfPts(pts) {
-  return [[d3.min(pts, p => p[0]), d3.min(pts, p => p[1])], [d3.max(pts, p => p[0]), d3.max(pts, p => p[1])]];
-}
-const boundsOf = ids => boundsOfPts(ids.map(i => proj([byId[i].lon, byId[i].lat])));
+const frame = b => map.fitBounds(b, {paddingTopLeft: [48, 48], paddingBottomRight: [48, 100], maxZoom: 13, animate: !rm(), duration: .6});
+const boundsOf = ids => L.latLngBounds(ids.map(i => [byId[i].lat, byId[i].lon]));
 function fitScope() {
-  if (scope === 'NE') { svg.transition().duration(rm() ? 0 : 600).call(zoom.transform, d3.zoomIdentity); return; }
+  if (scope === 'NE') { map.fitBounds(routeBounds(), {paddingTopLeft: [24, 24], paddingBottomRight: [24, 96], animate: !rm(), duration: .6}); return; }
   const [a, b] = kmRange();
-  const pts = DATA.perfil.slice(a, b + 1).map(p => proj([p[1], p[2]]));
-  stops.filter(s => s.uf === scope).forEach(s => pts.push(proj([s.lon, s.lat])));
-  frame(boundsOfPts(pts), 650, 0.8);
+  const pts = DATA.perfil.slice(a, b + 1).map(p => [p[2], p[1]]);
+  stops.filter(s => s.uf === scope).forEach(s => pts.push([s.lat, s.lon]));
+  map.fitBounds(L.latLngBounds(pts), {paddingTopLeft: [32, 32], paddingBottomRight: [32, 100], maxZoom: 13, animate: !rm(), duration: .6});
 }
-document.getElementById('zin').onclick = () => svg.transition().duration(250).call(zoom.scaleBy, 1.6);
-document.getElementById('zout').onclick = () => svg.transition().duration(250).call(zoom.scaleBy, 1 / 1.6);
+document.getElementById('zin').onclick = () => map.zoomIn();
+document.getElementById('zout').onclick = () => map.zoomOut();
 document.getElementById('zfit').onclick = fitScope;
+function showCursor(lat, lon) {
+  if (!curMk) curMk = L.marker([lat, lon], {icon: L.divIcon({className: 'curdot', iconSize: [16, 16]}), interactive: false, keyboard: false, zIndexOffset: 1000});
+  curMk.setLatLng([lat, lon]); if (!map.hasLayer(curMk)) curMk.addTo(map);
+}
+function hideCursor() { if (curMk && map.hasLayer(curMk)) map.removeLayer(curMk); }
 
 function drawLeg() {
-  const hi = d3.select('#hi');
+  if (!map) return;
   const s = selected && byId[selected];
-  if (!s || s.lateral) { hi.attr('d', null); return; }
-  const i = onroute.indexOf(s);
-  if (i <= 0) { hi.attr('d', null); return; }
+  const i = s && !s.lateral ? onroute.indexOf(s) : -1;
+  if (i <= 0) { hiLine.setLatLngs([]); return; }
   const a = Math.round(onroute[i - 1].km), b = Math.round(s.km);
-  hi.attr('d', path({type: 'LineString', coordinates: DATA.perfil.slice(a, b + 1).map(p => [p[1], p[2]])}));
+  hiLine.setLatLngs(DATA.perfil.slice(a, b + 1).map(p => [p[2], p[1]]));
 }
 
 /* ---------- profile ---------- */
@@ -553,13 +623,12 @@ function hoverKm(ev) {
   const i = Math.max(a, Math.min(b, Math.round(px.invert(x))));
   const p = P[i];
   d3.select('#pcur').attr('hidden', null).attr('x1', px(i)).attr('x2', px(i));
-  const c = proj([p[1], p[2]]);
-  d3.select('#cur').attr('hidden', null).attr('cx', c[0]).attr('cy', c[1]);
+  showCursor(p[2], p[1]);
   document.getElementById('phd').innerHTML = `km <b>${fmt(i)}</b> · <b>${fmt(p[0])} m</b> · perto de ${nearestStopAt(i).nome}`;
   return i;
 }
 ps.on('pointermove', hoverKm).on('pointerleave', () => {
-  d3.select('#pcur').attr('hidden', true); d3.select('#cur').attr('hidden', true);
+  d3.select('#pcur').attr('hidden', true); hideCursor();
   document.getElementById('phd').textContent = 'Passe o dedo ou o mouse no gráfico';
 }).on('click', ev => { const i = hoverKm(ev); if (tab !== 'paradas') setTab('paradas'); select(nearestStopAt(i).id, true); });
 
@@ -650,7 +719,7 @@ function select(id, focusMap) {
   if (focusMap) {
     const s = byId[id], i = onroute.indexOf(s);
     const ids = s.lateral ? [s.id, s.de] : (i > 0 ? [onroute[i - 1].id, s.id] : [s.id, onroute[1].id]);
-    frame(boundsOf(ids), 650, 0.7);
+    frame(boundsOf(ids));
   }
 }
 const qIn = document.getElementById('q');

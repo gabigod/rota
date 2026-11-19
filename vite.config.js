@@ -15,6 +15,8 @@ function paginaDoApp() {
           .replace(/<meta name="claude:[^>]*>\s*/g, '')
           .replace(/<link rel="preconnect"[^>]*>\s*/g, '')
           .replace(/<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com[^>]*>\s*/g, '')
+          .replace(/<link rel="stylesheet" href="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/leaflet\/[^>]*>/, () => `<style>${readFileSync('public/vendor/leaflet.css', 'utf8')}</style>`)
+          .replace(/<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/leaflet\/[^"]+"><\/script>/, '<script src="./vendor/leaflet.js"></script>')
           .replace(/<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/d3\/[^"]+"><\/script>/, '<script src="./vendor/d3.min.js"></script>')
           .replace('__DATA__', () => dados);
         return html.replace('<!--APP-->', () => app);
