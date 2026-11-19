@@ -925,20 +925,21 @@ const checklistGroups = {
   'Camping e cozinha': ['Barraca e estacas','Saco de dormir','Isolante térmico','Fogareiro','Combustível','Panela e talheres','Filtro de água','Isqueiro'],
   'Segurança e eletrônicos': ['Capacete','Luzes dianteira e traseira','Power bank','Cabos e carregadores','Documentos','Dinheiro/cartões','Kit primeiros socorros','Cópia offline dos mapas']
 };
-const toolBody = document.getElementById('travel-tools-body');
+// The tools panel is created by renderList(), so query it only when a tool is opened.
+const getToolBody = () => document.getElementById('travel-tools-body');
 function persistTravel() {
   try {
     localStorage.setItem(TRAVEL_KEYS.log, JSON.stringify(travelLog));
     localStorage.setItem(TRAVEL_KEYS.check, JSON.stringify(travelCheck));
   } catch (_) { alert('Não foi possível salvar. O armazenamento do aparelho pode estar cheio.'); }
 }
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function renderTravelLog() {
   const rows = travelLog.slice().sort((a,b) => b.date.localeCompare(a.date));
   return `<div class="h3">Diário de pedal · ${rows.length} registros</div>` +
     (rows.length ? rows.map(x => `<div class="travel-record"><span><b>${escapeHtml(x.date)}</b><small>${escapeHtml(x.place || 'Sem local')} · ${fmt(+x.km || 0)} km · ${fmt(+x.water || 0)} L de água</small><small>${escapeHtml(x.notes || '')}</small><button class="btn" data-delete-log="${escapeHtml(x.id)}">Excluir</button></span><b>${(+x.cost || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</b></div>`).join('') : '<p class="cnote">Nenhum dia registrado ainda.</p>');
-}
-function escapeHtml(v) {
-  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function renderChecklist() {
   let total = 0, checked = 0, out = '<div class="h3">Checklist de viagem</div>';
@@ -955,9 +956,11 @@ function renderChecklist() {
   return `<div class="check-progress">${checked}/${total} itens separados</div>` + out;
 }
 function showTravelTools(mode) {
-  if (mode === 'check') { toolBody.innerHTML = renderChecklist(); return; }
+  const body = getToolBody();
+  if (!body) return;
+  if (mode === 'check') { body.innerHTML = renderChecklist(); return; }
   if (mode === 'log') {
-    toolBody.innerHTML = `<div class="h3">Registrar dia de pedal</div>
+    body.innerHTML = `<div class="h3">Registrar dia de pedal</div>
       <form id="travel-log-form" class="travel-form">
         <label>Data<input type="date" name="date" required value="${new Date().toISOString().slice(0,10)}"></label>
         <label>Local<input name="place" maxlength="80" placeholder="Cidade ou trecho"></label>
@@ -972,39 +975,40 @@ function showTravelTools(mode) {
       const f = new FormData(ev.currentTarget);
       const item = Object.fromEntries(f.entries());
       if (!item.date || !Number.isFinite(+item.km) || +item.km < 0) return;
-      travelLog.push({...item, km:+item.km, water:+item.water||0, cost:+item.cost||0, id: (crypto.randomUUID?.() || String(Date.now()))});
+      travelLog.push({...item, km:+item.km, water:+item.water||0, cost:+item.cost||0, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()))});
       persistTravel();
       showTravelTools('log');
     });
-    return;
   }
 }
-document.getElementById('open-log').addEventListener('click', () => showTravelTools('log'));
-document.getElementById('open-check').addEventListener('click', () => showTravelTools('check'));
-toolBody.addEventListener('change', ev => {
-  const box = ev.target.closest('[data-check]');
-  if (!box) return;
-  const item = box.dataset.check;
-  travelCheck = box.checked ? [...new Set([...travelCheck,item])] : travelCheck.filter(x => x !== item);
-  persistTravel();
-  showTravelTools('check');
-});
-toolBody.addEventListener('click', ev => {
-  const b = ev.target.closest('[data-delete-log]');
-  if (!b) return;
-  travelLog = travelLog.filter(x => x.id !== b.dataset.deleteLog);
-  persistTravel();
-  showTravelTools('log');
-});
-document.getElementById('export-backup').addEventListener('click', () => {
+function exportTravelBackup() {
   const payload = {version:1, exportedAt:new Date().toISOString(), done:[...done], cfg, log:travelLog, checklist:travelCheck};
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='backup-rotas-bike.json'; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+// Event delegation is attached to the permanent list container; its content is rendered later.
+list.addEventListener('click', ev => {
+  if (ev.target.closest('#open-log')) { showTravelTools('log'); return; }
+  if (ev.target.closest('#open-check')) { showTravelTools('check'); return; }
+  if (ev.target.closest('#export-backup')) { exportTravelBackup(); return; }
+  if (ev.target.closest('#import-backup')) { document.getElementById('backup-file')?.click(); return; }
+  const del = ev.target.closest('[data-delete-log]');
+  if (del) {
+    travelLog = travelLog.filter(x => x.id !== del.dataset.deleteLog);
+    persistTravel(); showTravelTools('log');
+  }
 });
-document.getElementById('import-backup').addEventListener('click', () => document.getElementById('backup-file').click());
-document.getElementById('backup-file').addEventListener('change', async ev => {
+list.addEventListener('change', async ev => {
+  const box = ev.target.closest('[data-check]');
+  if (box) {
+    const item = box.dataset.check;
+    travelCheck = box.checked ? [...new Set([...travelCheck,item])] : travelCheck.filter(x => x !== item);
+    persistTravel(); showTravelTools('check');
+    return;
+  }
+  if (ev.target.id !== 'backup-file') return;
   const file = ev.target.files?.[0]; if (!file) return;
   try {
     const data = JSON.parse(await file.text());
@@ -1018,7 +1022,8 @@ document.getElementById('backup-file').addEventListener('change', async ev => {
     if (Array.isArray(data.log)) travelLog = data.log.slice(0,5000);
     if (Array.isArray(data.checklist)) travelCheck = data.checklist.filter(x => Object.values(checklistGroups).flat().includes(x));
     persistTravel(); saveDone(); saveCfg(); computeSchedule(); syncCfgInputs(); renderHeader(); renderList(); drawStops();
-    toolBody.innerHTML = '<p class="cnote">Backup importado. Seus dados foram restaurados.</p>';
+    const body = getToolBody();
+    if (body) body.innerHTML = '<p class="cnote">Backup importado. Seus dados foram restaurados.</p>';
   } catch (err) { alert('Backup inválido: ' + err.message); }
   ev.target.value = '';
 });
