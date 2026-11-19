@@ -57,7 +57,7 @@ jobs:
             TAG="rotas-v1.0.${{ github.run_number }}"
             gh release create "$TAG" RotasDeBike.apk \
               --title "Rotas de Bike v1.0.${{ github.run_number }}" \
-              --notes "Build da versão principal."
+              --notes "Build da versão principal." \
               --latest
           else
             echo "Build de teste na branch ${GITHUB_REF_NAME}; APK disponível nos Actions artifacts."
