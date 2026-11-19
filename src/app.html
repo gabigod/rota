@@ -399,9 +399,12 @@ addEventListener('hashchange', () => { const h = location.hash.slice(1).toUpperC
 const LS_BASE = 'mapa-base-v1', LS_CYC = 'mapa-ciclo-v1';
 const isDark = () => { const t = document.documentElement.dataset.theme; return t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); };
 const BASES = {
-  mapa: {nome: 'Mapa', url: () => isDark() ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', opt: {subdomains: 'abcd', maxZoom: 19, attribution: '© OpenStreetMap · © CARTO'}},
-  relevo: {nome: 'Relevo', url: () => 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', opt: {subdomains: 'abc', maxZoom: 17, attribution: '© OpenStreetMap · OpenTopoMap'}},
-  sat: {nome: 'Satélite', url: () => 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', opt: {maxZoom: 18, attribution: 'Esri, Maxar, Earthstar'}},
+  mapa: {nome: 'Mapa', layers: () => isDark()
+    ? [{url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 16, maxZoom: 17, attribution: 'Esri, HERE, Garmin, OpenStreetMap'}},
+       {url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 16, maxZoom: 17}}]
+    : [{url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', opt: {maxZoom: 17, maxNativeZoom: 17, attribution: 'Esri, HERE, Garmin, OpenStreetMap'}}]},
+  relevo: {nome: 'Relevo', layers: () => [{url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', opt: {subdomains: 'abc', maxZoom: 17, attribution: '© OpenStreetMap · OpenTopoMap'}}]},
+  sat: {nome: 'Satélite', layers: () => [{url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', opt: {maxNativeZoom: 17, maxZoom: 17, attribution: 'Esri, Maxar, Earthstar'}}]},
   off: {nome: 'Sem internet'}
 };
 let base = 'mapa', cyc = false;
@@ -443,9 +446,8 @@ function setBase(k, keep) {
   if (!keep) { try { localStorage.setItem(LS_BASE, k); } catch (e) {} }
   if (baseLayer) { map.removeLayer(baseLayer); baseLayer = null; }
   if (k !== 'off') {
-    const b = BASES[k];
-    baseLayer = L.tileLayer(b.url(), Object.assign({keepBuffer: 3, updateWhenZooming: false, updateWhenIdle: true, crossOrigin: false}, b.opt)).addTo(map);
-    baseLayer.bringToBack();
+    baseLayer = L.layerGroup(BASES[k].layers().map(l => L.tileLayer(l.url, Object.assign({keepBuffer: 3, updateWhenZooming: false, updateWhenIdle: true}, l.opt)))).addTo(map);
+    baseLayer.eachLayer(l => l.bringToBack());
   }
   mapEl.classList.toggle('offline', k === 'off');
   styleStates();
