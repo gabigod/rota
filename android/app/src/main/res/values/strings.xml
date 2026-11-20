@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Diário da Viagem</string>
+    <string name="title_activity_main">Diário da Viagem</string>
+    <string name="package_name">com.tem.diariobike</string>
+    <string name="custom_url_scheme">com.tem.diariobike</string>
+</resources>

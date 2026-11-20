@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Diário da Viagem</title>
+</head>
+<body>
+<div id="app">
+  <header class="topo"><div><div class="sup" id="sup">Diário da Viagem</div><h1 id="tit">Painel</h1></div></header>
+  <main id="tela" tabindex="-1"></main>
+  <nav class="abas" id="abas" aria-label="Seções">
+    <button data-act="aba" data-aba="painel">Painel</button>
+    <button data-act="aba" data-aba="dias">Dias</button>
+    <button data-act="aba" data-aba="gastos">Gastos</button>
+    <button data-act="aba" data-aba="mais">Mais</button>
+  </nav>
+  <button class="fab" id="fab" data-act="fab" aria-label="Adicionar">+</button>
+</div>
+<div id="sheet" class="sheet-wrap" hidden><div class="veu" data-act="fechar"></div><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheet-body"></div></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="arq" multiple hidden>
+<input type="file" id="arq1" hidden>
+<input type="file" id="arqbk" hidden>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

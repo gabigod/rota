@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ícone do Diário da Viagem (barras de estatística; fundo #15211C). Os PNGs do Android saem daqui. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#15211C"/><g transform="translate(512 512) scale(0.92) translate(-512 -512)">
+<g fill="#F3EFE4"><rect x="226" y="520" width="156" height="244" rx="30"/><rect x="434" y="400" width="156" height="364" rx="30"/></g>
+<rect x="642" y="262" width="156" height="502" rx="30" fill="#FF5FA2"/>
+<path d="M190 806 H834" stroke="#F3EFE4" stroke-width="26" stroke-linecap="round"/>
+<path d="M226 440 L434 330 L642 190 L760 150" fill="none" stroke="#F3EFE4" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
+</g></svg>

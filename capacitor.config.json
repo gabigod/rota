@@ -1,0 +1,15 @@
+{
+  "appId": "com.tem.diariobike",
+  "appName": "Diário da Viagem",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DEFAULT",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}
