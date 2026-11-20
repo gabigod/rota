@@ -8,14 +8,14 @@ import {
   aoMudar, carregar, salvarAgora, lerTrilha, salvarDia, apagarDia, salvarGasto, apagarGasto, salvarPeca, apagarPeca,
   salvarCfg, salvarTaxa, montarBackup, marcarBackup, lerBackup, carregarExemplo, apagarExemplo, temExemplo
 } from './store.js';
-import { calcular } from './stats.js';
+import { calcular, extras } from './stats.js';
 import { lerArquivo } from './importers.js';
 import { barras, linha, hbarras, calor, perfil, forma, cartao } from './charts.js';
 import { iniciarNativo, salvarArquivo } from './native.js';
 
 const { n0, n1, n2, kmTxt, brl, brl0, dinheiro, dur, hoje, addDias, difDias, semanaDe, mesCurto, mesLongo, dm, dataLonga, diaSemana, num, esc } = F;
 const $ = s => document.querySelector(s);
-const TITULOS = { painel: 'Painel', dias: 'Dias', gastos: 'Gastos', mais: 'Mais' };
+const TITULOS = { painel: 'Painel', dias: 'Dias', graficos: 'Gráficos', gastos: 'Gastos', mais: 'Mais' };
 const NOMES_PERNOITE = PERNOITES;
 
 let aba = 'painel', filtroCat = 'Todas', st = null, pend = null;
@@ -246,6 +246,42 @@ function detalheGasto(id) {
     <div class="acoes"><button class="btn" data-act="editar-gasto" data-id="${id}">Editar</button><button class="btn d" data-act="apagar-gasto" data-id="${id}">Apagar</button><button class="btn tudo" data-act="fechar">Fechar</button></div>`);
 }
 
+// ---------- GRÁFICOS ----------
+function telaGraficos() {
+  if (st.vazio) return `<div class="vazio"><p>Os gráficos aparecem quando você registrar o primeiro dia.</p><div class="bts"><button class="btn" data-act="exemplo">Ver com dados de exemplo</button></div></div>`;
+  const X = (l, f = F.dm) => l.map(r => ({ v: r.v, x: f(r.data), t: '' }));
+  const dia = (l, fmt, cor, cada) => barras(l.map(r => ({ v: r.v, x: dm(r.data), t: `${dm(r.data)} · ${fmt(r.v)}` })), { cor, fmt: v => n0(v), cada });
+  const e = extras(S, st);
+  const sem = (l, fmt, cor) => barras(l.map(s => ({ v: s.v, x: dm(s.k), t: `Semana de ${dm(s.k)} · ${fmt(s.v)}` })), { cor, fmt: v => n0(v) });
+  const mes = (l, fmt, cor) => barras(l.map(s => ({ v: s.v, x: mesCurto(s.k), t: `${mesLongo(s.k)} · ${fmt(s.v)}` })), { cor, fmt: v => n0(v) });
+  const k = v => n1(v) + ' km', R = 'var(--route)', A = 'var(--side)';
+  let o = '<h2>Pedaladas</h2>';
+  o += cartao('Km por dia (últimos 60 dias)', dia(e.ultKm, k, R, 10));
+  if (st.serieMeses.length) o += cartao('Km por mês', mes(st.serieMeses, v => n0(v) + ' km', R));
+  o += cartao('Velocidade média por dia (km/h)', dia(e.ultVel, v => n1(v) + ' km/h', R, 10));
+  if (st.serieSemanas.length > 1) o += cartao('Velocidade média por semana (km/h)', sem(e.serieVelSem, v => n1(v) + ' km/h', R));
+  o += cartao('Horas pedalando por dia', dia(e.ultH, v => n1(v) + ' h', R, 10));
+  if (e.acTempo.length > 1) o += cartao('Horas acumuladas', linha(e.acTempo, { un: 'h' }));
+  o += cartao('Subida por dia (m)', dia(e.ultSub, v => n0(v) + ' m', R, 10));
+  if (e.acSub.length > 1) o += cartao('Subida acumulada (m)', linha(e.acSub, { un: 'm' }));
+  const med = e.semDia.map((w, i) => ({ v: w.n ? w.s / w.n : 0, x: ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'][i], t: `${['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'][i]} · média ${n1(w.n ? w.s / w.n : 0)} km em ${w.n} dias` }));
+  o += cartao('Média de km por dia da semana', barras(med, { cada: 1 }));
+  const fx = e.faixas;
+  o += cartao('Quantos dias em cada faixa de km', barras(fx.map(f => ({ v: f.v, x: f.nome, t: `${f.nome} · ${f.v} dias` })), { cada: 1, fmt: v => n0(v) }));
+  if (e.clima.length) o += `<section class="card"><h3>Clima nos dias</h3>${hbarras(e.clima.map(([c, v]) => ({ nome: c, v, txt: `${v} ${v === 1 ? 'dia' : 'dias'}` })), 'var(--route)')}</section>`;
+  if (st.porPais.length) o += `<section class="card"><h3>Km por país</h3>${hbarras(st.porPais.filter(p => p.km > 0).map(p => ({ nome: (FLAG[p.pais] || '') + ' ' + p.pais, v: p.km, txt: n0(p.km) + ' km' })), 'var(--route)')}</section>`;
+  o += '<h2>Dinheiro</h2>';
+  o += cartao('Gasto por dia (últimos 60 dias, R$)', dia(e.ultGasto, brl0, A, 10));
+  if (st.serieSemanas.length > 1) o += cartao('Gasto por semana (R$)', sem(e.serieSemG, brl0, A));
+  if (st.serieGastoMes.length > 1) o += cartao('Gasto por mês (R$)', mes(st.serieGastoMes, brl0, A));
+  if (e.acGasto.length > 1) o += cartao('Gasto acumulado (R$)', linha(e.acGasto, { un: 'R$', cor: A }));
+  if (e.custoKmMes.some(m => m.v > 0)) o += cartao('Custo por km em cada mês (R$)', barras(e.custoKmMes.map(m => ({ v: m.v, x: mesCurto(m.k), t: `${mesLongo(m.k)} · ${brl(m.v)} por km` })), { cor: A, fmt: v => n1(v) }));
+  if (st.porCat.length) o += `<section class="card"><h3>Reais por km, por categoria</h3>${hbarras(e.porCatPorKm.map(([c, v]) => ({ nome: c, v, txt: brl(v) })))}</section>`;
+  const gp = st.porPais.filter(p => p.gasto > 0);
+  if (gp.length) o += `<section class="card"><h3>Gasto por país</h3>${hbarras(gp.map(p => ({ nome: (FLAG[p.pais] || '') + ' ' + p.pais, v: p.gasto, txt: brl0(p.gasto) })))}</section>`;
+  return o;
+}
+
 // ---------- MAIS ----------
 function telaMais() {
   let o = '';
@@ -338,11 +374,11 @@ function render() {
   const t = $('#tela');
   if (t._aba) rolagem[t._aba] = t.scrollTop;
   t._aba = aba;
-  t.innerHTML = aba === 'painel' ? telaPainel() : aba === 'dias' ? telaDias() : aba === 'gastos' ? telaGastos() : telaMais();
+  t.innerHTML = aba === 'painel' ? telaPainel() : aba === 'dias' ? telaDias() : aba === 'graficos' ? telaGraficos() : aba === 'gastos' ? telaGastos() : telaMais();
   t.scrollTop = rolagem[aba] || 0;
   $('#tit').textContent = TITULOS[aba];
   document.querySelectorAll('#abas button').forEach(b => { if (b.dataset.aba === aba) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  $('#fab').hidden = !(aba === 'dias' || aba === 'gastos' || aba === 'painel');
+  $('#fab').hidden = aba === 'mais' || aba === 'graficos';
   t.querySelectorAll('[data-fim]').forEach(e => { e.scrollLeft = e.scrollWidth; });
 }
 let quer = false;

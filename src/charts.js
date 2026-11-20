@@ -34,22 +34,22 @@ export function barras(serie, { h = 150, cor = 'var(--route)', fmt = curto, cada
 }
 
 // linha: [{data, real, plano}] — km acumulado contra o plano
-export function linha(pts, { h = 170 } = {}) {
+export function linha(pts, { h = 170, un = 'km', cor = 'var(--route)' } = {}) {
   if (pts.length < 2) return '<p class="vazio-mini">Precisa de pelo menos 2 dias para desenhar a linha.</p>';
   const pl = 40, pr = 10, pt = 10, pb = 20, iw = W - pl - pr, ih = h - pt - pb;
-  const max = nice(Math.max(...pts.map(p => Math.max(p.real, p.plano))));
+  const tp = pts[0].plano != null, max = nice(Math.max(...pts.map(p => Math.max(p.real, tp ? p.plano : 0))));
   const X = i => pl + iw * i / (pts.length - 1), Y = v => pt + ih - ih * v / max;
   const cam = k => pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(p[k]).toFixed(1)}`).join('');
   let o = `<svg viewBox="0 0 ${W} ${h}" class="grafico" role="img">`;
   for (const f of [0, .5, 1]) { const y = pt + ih - ih * f; o += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" class="grade"/><text x="${pl - 5}" y="${y + 3}" class="eixo" text-anchor="end">${curto(max * f)}</text>`; }
-  o += `<path d="${cam('plano')}" class="plano"/><path d="${cam('real')}" class="real"/>`;
+  o += `${tp ? `<path d="${cam('plano')}" class="plano"/>` : ''}<path d="${cam('real')}" class="real" style="stroke:${cor}"/>`;
   const u = pts.length - 1;
-  o += `<circle cx="${X(u).toFixed(1)}" cy="${Y(pts[u].real).toFixed(1)}" r="4" class="ponto"/>`;
+  o += `<circle cx="${X(u).toFixed(1)}" cy="${Y(pts[u].real).toFixed(1)}" r="4" class="ponto" style="fill:${cor}"/>`;
   for (const i of [0, Math.floor(u / 2), u]) o += `<text x="${X(i).toFixed(1)}" y="${h - 5}" class="eixo" text-anchor="${i === 0 ? 'start' : i === u ? 'end' : 'middle'}">${dm(pts[i].data)}</text>`;
   const passo = Math.max(1, Math.ceil(pts.length / 70)), bw = iw / (pts.length - 1) * passo;
   for (let i = 0; i < pts.length; i += passo) {
     const p = pts[i];
-    o += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${pt}" width="${bw.toFixed(1)}" height="${ih}" fill="transparent" data-t="${esc(`${dm(p.data)} · real ${n0(p.real)} km · plano ${n0(p.plano)} km`)}"/>`;
+    o += `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${pt}" width="${bw.toFixed(1)}" height="${ih}" fill="transparent" data-t="${esc(tp ? `${dm(p.data)} · real ${n0(p.real)} ${un} · plano ${n0(p.plano)} ${un}` : `${dm(p.data)} · ${n0(p.real)} ${un}`)}"/>`;
   }
   return o + '</svg>';
 }

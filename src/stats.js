@@ -123,3 +123,31 @@ export function calcular(S) {
     nPaises: porPais.filter(p => p.pais !== 'Outro' && (p.dias || p.gasto)).length
   };
 }
+
+// séries extras para a aba Gráficos
+export function extras(S, st, N = 60) {
+  const hj = hoje(), mapa = new Map(st.diasAgg.map(d => [d.data, d]));
+  const gDia = new Map(); for (const g of S.gastos) gDia.set(g.data, (gDia.get(g.data) || 0) + g.brl);
+  const fim = st.diasAgg.length && st.diasAgg.at(-1).data > hj ? st.diasAgg.at(-1).data : hj;
+  const datas = []; for (let i = N - 1; i >= 0; i--) datas.push(addDias(fim, -i));
+  const dd = f => datas.map(dt => ({ data: dt, v: f(mapa.get(dt), dt) || 0 }));
+  const ultKm = dd(d => d?.km), ultSub = dd(d => d?.subida), ultH = dd(d => d ? d.min / 60 : 0), ultGasto = dd((d, dt) => gDia.get(dt));
+  const ultVel = dd(d => d && d.km > 0 && d.min > 0 ? d.km / (d.min / 60) : 0);
+  const semDia = Array.from({ length: 7 }, () => ({ s: 0, n: 0 }));
+  for (const d of st.diasAgg) if (d.km > 0) { const w = (new Date(d.data + 'T12:00:00').getDay() + 6) % 7; semDia[w].s += d.km; semDia[w].n++; }
+  const faixas = [['até 30 km', 0, 30], ['30–60', 30, 60], ['60–90', 60, 90], ['90–120', 90, 120], ['120+', 120, 1e9]].map(([nome, a, b]) => ({ nome, v: st.diasAgg.filter(d => d.km > a && d.km <= b).length }));
+  let ac = 0, as = 0, ag = 0;
+  const acSub = [], acGasto = [], acTempo = [];
+  const todas = st.diasAgg.length ? Array.from({ length: difDias(st.inicio, fim) + 1 }, (_, i) => addDias(st.inicio, i)) : [];
+  let at = 0;
+  for (const dt of todas) { as += mapa.get(dt)?.subida || 0; ag += gDia.get(dt) || 0; at += (mapa.get(dt)?.min || 0) / 60; acSub.push({ data: dt, real: as }); acGasto.push({ data: dt, real: ag }); acTempo.push({ data: dt, real: at }); }
+  const semG = new Map(); for (const [dt, v] of gDia) { const w = semanaDe(dt); semG.set(w, (semG.get(w) || 0) + v); }
+  const serieSemG = st.serieSemanas.map(s => ({ k: s.k, v: semG.get(s.k) || 0 }));
+  const velSem = new Map(); for (const d of st.diasAgg) if (d.km > 0 && d.min > 0) { const w = semanaDe(d.data), o = velSem.get(w) || { km: 0, min: 0 }; o.km += d.km; o.min += d.min; velSem.set(w, o); }
+  const serieVelSem = st.serieSemanas.map(s => { const o = velSem.get(s.k); return { k: s.k, v: o ? o.km / (o.min / 60) : 0 }; });
+  const gMes = new Map(); for (const g of S.gastos) gMes.set(g.data.slice(0, 7), (gMes.get(g.data.slice(0, 7)) || 0) + g.brl);
+  const custoKmMes = st.serieMeses.map(m => ({ k: m.k, v: m.v > 0 ? (gMes.get(m.k) || 0) / m.v : 0 }));
+  const clima = new Map(); for (const d of S.dias) if (d.clima) clima.set(d.clima, (clima.get(d.clima) || 0) + 1);
+  const porCatPorKm = st.porCat.map(([c, v]) => [c, st.kmTotal ? v / st.kmTotal : 0]);
+  return { datas, ultKm, ultSub, ultH, ultGasto, ultVel, semDia, faixas, acSub, acGasto, acTempo, serieSemG, serieVelSem, custoKmMes, clima: [...clima].sort((a, b) => b[1] - a[1]), porCatPorKm };
+}
