@@ -462,7 +462,7 @@ data = dict(
                 km_laterais=sum(s.get('km_extra', 0) for s in stops)),
     ufs=ufs, barcos=barcos, cidades=list(cidades_mapa.values()),
     stops=stops, etapas=etapas, linha=line, perfil=prof,
-    laterais={'buracao': side('s1.gpx'), 'pratinha': side('s2.gpx'), 'transpantaneira': side('s6.gpx'), 'perito-moreno': side('s7.gpx'), 'paine': side('s8.gpx'), 'valdes': side('s9.gpx'), 'morretes': side('s10.gpx')},
+    laterais={'buracao': side('s1.gpx'), 'pratinha': side('s2.gpx'), 'transpantaneira': side('s6.gpx'), 'perito-moreno': side('s7.gpx'), 'paine': side('s8.gpx'), 'valdes': side('s9.gpx'), 'morretes': side('s10.gpx'), 'sajama': side('s11.gpx')},
     paises=paises, linha_aprox=line_aprox,
     estados=states)
 data['epocas'] = EPOCAS
