@@ -70,6 +70,7 @@ h1 span{color:var(--route)}
 .legend i.d{border-top:2.5px dashed var(--side)}
 .legend i.b{border-top:2.5px dotted var(--side)}
 .legend i.a{border-top:3px dotted var(--route)}
+.legend i.f{border-top:3px solid var(--muted);opacity:.55}
 .profile{grid-column:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px 4px;min-width:0}
 .profile .hd{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);gap:10px}
 .profile .hd b{font-family:var(--f-mono);color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
@@ -213,7 +214,7 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
       <button class="zbtn" id="zout" aria-label="Afastar">−</button>
       <button class="zbtn" id="zfit" aria-label="Enquadrar a rota" title="Enquadrar">⤢</button>
     </div>
-    <div class="legend"><span><i></i>Rota</span><span><i class="d"></i>Bate-volta</span><span><i class="b"></i>Barco</span><span id="lg-aprox"><i class="a"></i>Aproximado</span></div>
+    <div class="legend"><span><i></i>Rota</span><span><i class="d"></i>Bate-volta</span><span><i class="b"></i>Barco</span><span id="lg-aprox"><i class="a"></i>Aproximado</span><span id="lg-prog" hidden><i class="f"></i>Já pedalado</span></div>
   </div>
 
   <section class="profile" aria-label="Perfil de altitude">
@@ -414,7 +415,10 @@ try { base = localStorage.getItem(LS_BASE) || 'ciclo'; cyc = localStorage.getIte
 if (!BASES[base]) base = 'ciclo';
 const mapEl = document.getElementById('map');
 let map = null, vec = null, baseLayer = null, cycLayer = null, polyS = null, polyP = null, stopG = null, townG = null, curMk = null;
-let rHalo, rLine, aHalo, aLine, hiLine, latLines = [], boatLines = [];
+let rHalo, rLine, dHalo, dLine, aHalo, aLine, hiLine, latLines = [], boatLines = [];
+const LS_PROG = 'prog-modo';
+let progMode = 'apagado';
+try { const pm = localStorage.getItem(LS_PROG); if (['apagado', 'escondido', 'normal'].includes(pm)) progMode = pm; } catch (e) {}
 const stopM = {}, townM = [];
 let C = null, lastZ = -1;
 const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -435,9 +439,60 @@ function polyStyle(f) {
     fillColor: off ? (rota ? c.landBa : c.land) : c.route, fillOpacity: off ? 1 : (rota ? .07 : 0)};
 }
 function styleStates() { if (polyS) polyS.setStyle(polyStyle); if (polyP) polyP.setStyle(polyStyle); }
+/* ---------- progresso: o trecho já pedalado fica apagado, escondido ou normal ---------- */
+let flatLL = null, llLen = 0;
+function prepFlat() {
+  if (flatLL) return;
+  flatLL = []; let t = 0, prev = null;
+  routeLL.forEach((seg, s) => seg.forEach((p, i) => {
+    if (prev && i > 0) t += L.latLng(prev[0], prev[1]).distanceTo(L.latLng(p[0], p[1])) / 1000;
+    flatLL.push([s, i, t, p]); prev = p;
+  }));
+  llLen = t;
+}
+function lastDoneKm() {
+  let m = 0;
+  for (const s of onroute) if (done.has(s.id) && s.km > m) m = s.km;
+  return m;
+}
+function splitRoute(km) {
+  prepFlat();
+  const tgt = km * llLen / DATA.regiao.km, pr = DATA.perfil[Math.min(DATA.perfil.length - 1, Math.round(km))], jan = llLen * .04;
+  let best = 0, bd = Infinity;
+  for (let k = 0; k < flatLL.length; k++) {
+    const f = flatLL[k];
+    if (Math.abs(f[2] - tgt) > jan) continue;
+    const d = (f[3][0] - pr[2]) ** 2 + (f[3][1] - pr[1]) ** 2;
+    if (d < bd) { bd = d; best = k; }
+  }
+  const [si, ii] = flatLL[best];
+  const doneSegs = [], rest = [];
+  routeLL.forEach((seg, s) => {
+    if (s < si) doneSegs.push(seg);
+    else if (s === si) { doneSegs.push(seg.slice(0, ii + 1)); rest.push(seg.slice(ii)); }
+    else rest.push(seg);
+  });
+  return {done: doneSegs, rest};
+}
+function updateProgress() {
+  if (!rLine) return;
+  const km = lastDoneKm();
+  if (km < 1 || progMode === 'normal') { rHalo.setLatLngs(routeLL); rLine.setLatLngs(routeLL); dHalo.setLatLngs([]); dLine.setLatLngs([]); }
+  else {
+    const {done: d, rest} = splitRoute(km);
+    rHalo.setLatLngs(rest); rLine.setLatLngs(rest);
+    const faded = progMode === 'apagado' ? d : [];
+    dHalo.setLatLngs(faded); dLine.setLatLngs(faded);
+  }
+  const lg = document.getElementById('lg-prog'); if (lg) lg.hidden = !(km >= 1 && progMode === 'apagado');
+  renderSwitch();
+}
+const PROG_NOME = {apagado: 'Feito: apagado', escondido: 'Feito: escondido', normal: 'Feito: normal'};
+
 function paintRoute() {
   const c = colors();
   rHalo.setStyle({color: c.halo}); rLine.setStyle({color: c.route});
+  dHalo.setStyle({color: c.halo}); dLine.setStyle({color: c.muted});
   aHalo.setStyle({color: c.halo}); aLine.setStyle({color: c.route});
   hiLine.setStyle({color: c.route});
   latLines.forEach(l => l.setStyle({color: c.side})); boatLines.forEach(l => l.setStyle({color: c.side}));
@@ -468,11 +523,16 @@ function setCyc(on) {
 }
 function renderSwitch() {
   document.getElementById('lbox').innerHTML = Object.entries(BASES).map(([k, b]) => `<button data-base="${k}" aria-pressed="${base === k}">${b.nome}</button>`).join('')
-    + `<button data-cyc="1" aria-pressed="${cyc}" title="Mostra ciclovias e rotas de bike (precisa de internet)">Ciclovias</button>`;
+    + `<button data-cyc="1" aria-pressed="${cyc}" title="Mostra ciclovias e rotas de bike (precisa de internet)">Ciclovias</button>`
+    + (lastDoneKm() >= 1 ? `<button data-prog="1" aria-pressed="${progMode !== 'normal'}" title="Como mostrar o trecho que você já pedalou (toque para mudar)">${PROG_NOME[progMode]}</button>` : '');
 }
 document.getElementById('lbox').addEventListener('click', ev => {
   const b = ev.target.closest('button'); if (!b) return;
-  if (b.dataset.base) setBase(b.dataset.base); else setCyc(!cyc);
+  if (b.dataset.prog) {
+    progMode = {apagado: 'escondido', escondido: 'normal', normal: 'apagado'}[progMode];
+    try { localStorage.setItem(LS_PROG, progMode); } catch (e) {}
+    updateProgress();
+  } else if (b.dataset.base) setBase(b.dataset.base); else setCyc(!cyc);
 });
 
 function layout() {
@@ -486,6 +546,8 @@ function layout() {
   polyS = L.geoJSON(DATA.estados, {renderer: vec, interactive: false, style: polyStyle}).addTo(map);
   rHalo = L.polyline(routeLL, Object.assign({weight: 7, opacity: .9}, o)).addTo(map);
   rLine = L.polyline(routeLL, Object.assign({weight: 3.6}, o)).addTo(map);
+  dHalo = L.polyline([], Object.assign({weight: 5, opacity: .35}, o)).addTo(map);
+  dLine = L.polyline([], Object.assign({weight: 2.6, opacity: .6}, o)).addTo(map);
   const apLL = DATA.linha_aprox.map(l => l.map(ll));
   aHalo = L.polyline(apLL, Object.assign({weight: 7, opacity: .9}, o)).addTo(map);
   aLine = L.polyline(apLL, Object.assign({weight: 3.2, dashArray: '2 7'}, o)).addTo(map);
@@ -500,7 +562,7 @@ function layout() {
     m.on('click', () => { if (scope !== 'NE' && s.uf !== scope) { scope = s.uf; renderHeader(); styleStates(); } if (tab !== 'paradas') setTab('paradas'); select(s.id, true); });
     stopM[s.id] = m; stopG.addLayer(m);
   });
-  paintRoute();
+  paintRoute(); updateProgress();
   map.on('moveend', refreshLabels);
   setBase(base, true); setCyc(cyc);
   new ResizeObserver(() => map.invalidateSize()).observe(mapEl);
@@ -710,7 +772,7 @@ function renderList() {
 }
 list.addEventListener('click', ev => {
   const d = ev.target.closest('[data-done]');
-  if (d) { const id = d.dataset.done; done.has(id) ? done.delete(id) : done.add(id); saveDone(); renderList(); drawStops(); return; }
+  if (d) { const id = d.dataset.done; done.has(id) ? done.delete(id) : done.add(id); saveDone(); renderList(); drawStops(); updateProgress(); return; }
   const r = ev.target.closest('.row');
   if (r) select(selected === r.dataset.id ? null : r.dataset.id, true);
 });
