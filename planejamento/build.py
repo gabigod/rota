@@ -208,6 +208,8 @@ for x in stops:
     if x['id'] == 'gran-sabana':
         x['dica'] = 'Ponto de volta. Daqui você retorna a Pacaraima; de Boa Vista a Manaus a sugestão é ônibus (umas 12 h, a bike vai no bagageiro) para não repetir 1.000 km de BR-174.'
         x['resumo'] = 'Planalto aberto de savana com tepuis no horizonte e cachoeiras ao lado da estrada. Ponto mais ao norte da rota na Venezuela.'
+if 'POST' in globals():
+    stops = POST(stops)
 # locate onroute stops monotonic
 j = 0
 for s in stops:
@@ -395,7 +397,6 @@ for f in wd['features']:
             out.append([[[round(q[1], 3), round(q[0], 3)] for q in r]])
     pt = {'Venezuela': 'Venezuela', 'Guyana': 'Guiana', 'Suriname': 'Suriname', 'French Guiana': 'Guiana Francesa', 'Colombia': 'Colômbia', 'Peru': 'Peru', 'Bolivia': 'Bolívia', 'Ecuador': 'Equador', 'Panama': 'Panamá', 'Paraguay': 'Paraguai', 'Argentina': 'Argentina', 'Chile': 'Chile', 'Uruguay': 'Uruguai'}[nm]
     paises.append(dict(type='Feature', properties=dict(nome=pt), geometry=dict(type='MultiPolygon', coordinates=out)))
-barcos.append([[-48.502, -1.455], [-48.5156, -0.7536]])
 # ---- cidades no caminho e água por etapa ----
 import csv
 TD = sys.argv[0].replace('build.py', 'towns')
@@ -459,10 +460,11 @@ for s in stops:
     s.pop('idx', None)
 data = dict(
     regiao=dict(nome='Nordeste', km=round(cum[-1], 1), subida=total_gain,
-                km_laterais=sum(s.get('km_extra', 0) for s in stops)),
+                km_laterais=sum(s.get('km_extra', 0) for s in stops if not s.get('opcional')),
+                km_opcionais=sum(s.get('km_extra', 0) for s in stops if s.get('opcional'))),
     ufs=ufs, barcos=barcos, cidades=list(cidades_mapa.values()),
     stops=stops, etapas=etapas, linha=line, perfil=prof,
-    laterais={'buracao': side('s1.gpx'), 'pratinha': side('s2.gpx'), 'transpantaneira': side('s6.gpx'), 'perito-moreno': side('s7.gpx'), 'paine': side('s8.gpx'), 'valdes': side('s9.gpx'), 'morretes': side('s10.gpx'), 'sajama': side('s11.gpx')},
+    laterais={'buracao': side('s1.gpx'), 'pratinha': side('s2.gpx'), 'transpantaneira': side('s6.gpx'), 'perito-moreno': side('s7.gpx'), 'paine': side('s8.gpx'), 'valdes': side('s9.gpx'), 'morretes': side('s10.gpx'), 'sajama': side('s11.gpx'), **{k: side(f) for k, f in globals().get('LAT_FILES', {}).items()}},
     paises=paises, linha_aprox=line_aprox,
     estados=states)
 data['epocas'] = EPOCAS
@@ -502,6 +504,7 @@ def segs_for(km_a, km_b):
         if b_ - a_ >= 2: out.append(rdp_iter(track[a_:b_], 0.0002))
     return out
 def gpx_text(title, segs, wpts, lats):
+    opc = {x['nome'] for x in stops if x.get('opcional')}
     o = ['<?xml version="1.0" encoding="UTF-8"?>',
          '<gpx version="1.1" creator="Rotas de Bike do Tem" xmlns="http://www.topografix.com/GPX/1/1">',
          '<metadata><name>' + xesc(title) + '</name></metadata>']
@@ -512,7 +515,7 @@ def gpx_text(title, segs, wpts, lats):
         o.append('<trkseg>' + ''.join('<trkpt lat="%.5f" lon="%.5f"><ele>%d</ele></trkpt>' % (p[0], p[1], round(p[2])) for p in sg) + '</trkseg>')
     o.append('</trk>')
     for nm, coords in lats:
-        o.append('<trk><name>' + xesc('Bate-volta: ' + nm) + '</name><trkseg>' + ''.join('<trkpt lat="%.5f" lon="%.5f"></trkpt>' % (c[1], c[0]) for c in coords) + '</trkseg></trk>')
+        o.append('<trk><name>' + xesc(('Opcional: ' if nm in opc else 'Bate-volta: ') + nm) + '</name><trkseg>' + ''.join('<trkpt lat="%.5f" lon="%.5f"></trkpt>' % (c[1], c[0]) for c in coords) + '</trkseg></trk>')
     o.append('</gpx>')
     return '\n'.join(o)
 def slug(t):

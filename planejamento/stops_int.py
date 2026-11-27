@@ -882,3 +882,148 @@ EPOCAS = {
  'ushuaia': {'m': [11, 12, 1, 2, 3], 't': 'Terra do Fogo: novembro a março'},
  'valdes': {'m': [3, 4, 6, 7, 8, 9, 10, 11, 12], 't': 'Orcas em março e abril; baleias de junho a dezembro'},
 }
+
+# ---- revisão final (27/11/2026): saída em 7/1, Colca, Humahuaca, Cejar, Goiás, Cipó e Diamantina, desvios opcionais ----
+# Colca: de Espinar a rota passa por Sibayo e Chivay em vez de Imata (só uns 10 km a mais)
+_i = SEGS.index(('gpx', 'q3.gpx', None, None))
+SEGS[_i:_i + 1] = [('gpx', 'q3.gpx', None, (-14.789983, -71.409909)), ('gpx', 'q5.gpx', None, None)]
+# Minas: de BH para o norte pela Serra do Cipó, Conceição do Mato Dentro, Serro e Diamantina, voltando à rota em Montes Claros
+_i = SEGS.index(('gpx', 'g9.gpx', None, None))
+SEGS[_i:_i + 1] = [('gpx', 'g10.gpx', None, None), ('gpx', 'g9.gpx', (-16.735115, -43.861506), None)]
+
+# desvios com traçado (linha tracejada); os com opcional=True ficam fora do cronograma
+LAT_FILES = {'cruz-condor': 's12.gpx', 'cejar': 's13.gpx', 'humahuaca': 's14.gpx', 'tortel': 's15.gpx',
+             'tiwanaku': 's16.gpx', 'nobres': 's17.gpx', 'pinguino-rei': 's18.gpx', 'lagunas': 's19.gpx'}
+
+_byid = {x['id']: x for x in INT}
+def _set(id_, **kw):
+    _byid[id_].update(kw)
+
+INT = [x for x in INT if x['id'] not in {'sete-lagoas', 'curvelo'}]
+_insert_after(INT, 'pirenopolis', [
+ dict(id='goias', nome='Cidade de Goiás', lat=-15.934, lon=-50.140, tipo='Atração', dias=1,
+      resumo='Antiga capital de Goiás: cidade colonial do ouro, Patrimônio da Humanidade, à beira do Rio Vermelho.',
+      fazer=['Casa de Cora Coralina, a poeta doceira', 'Centro histórico, igrejas e o Museu das Bandeiras', 'Doces cristalizados das doceiras da cidade'],
+      dica='Fica bem na rota, no meio do trecho longo entre Pirenópolis e Barra do Garças. Bom lugar para descansar antes do Mato Grosso.'),
+])
+_insert_after(INT, 'cuiaba', [
+ dict(id='nobres', nome='Bom Jardim (Nobres)', lat=-14.5527, lon=-55.8726, tipo='Atração', dias=2, lateral=True, opcional=True, km_extra=288,
+      resumo='Rios de água cristalina para flutuar de máscara entre os peixes e uma dolina cheia de araras. Lembra Bonito, com menos gente.',
+      fazer=['Flutuação no Aquário Encantado e no Rio Salobra', 'Lagoa das Araras ao amanhecer', 'Cachoeira Serra Azul'],
+      dica='Desvio opcional: uns 144 km de Cuiabá, ida e volta em uns 4 dias. A flutuação é de colete, então não precisa saber nadar. Os passeios têm limite de gente: agende antes.'),
+])
+_insert_after(INT, 'concepcion', [
+ dict(id='san-javier', nome='San Javier', lat=-16.2742, lon=-62.5072, tipo='Atração', dias=0,
+      resumo='A primeira das missões jesuíticas da Chiquitania, fundada em 1691, com a igreja de madeira restaurada.',
+      fazer=['Igreja missionária e a praça'],
+      dica='Fica na própria estrada de Concepción para Santa Cruz. Vale uma parada de algumas horas.'),
+])
+_insert_after(INT, 'salar', [
+ dict(id='lagunas', nome='Lagunas Colorada e Verde', lat=-22.2, lon=-67.78, tipo='Atração', dias=3, lateral=True, opcional=True, km_extra=0,
+      resumo='A Rota das Joias do sul da Bolívia: lagoa vermelha cheia de flamingos, gêiseres a quase 5.000 m, o Deserto de Dalí e a Laguna Verde ao pé do Licancabur.',
+      fazer=['Laguna Colorada e os flamingos', 'Gêiseres Sol de Mañana e Termas de Polques', 'Árvore de Pedra e Laguna Verde'],
+      dica='Desvio opcional, de jipe: o passeio clássico de 3 dias sai de Uyuni e volta para lá, e a bike fica no hostel. De bike é o trecho mais duro do continente (areia, 5.000 m e frio), por isso a rota sobe para La Paz. A linha no mapa só mostra por onde o jipe passa.'),
+])
+_insert_after(INT, 'la-paz', [
+ dict(id='tiwanaku', nome='Tiwanaku', lat=-16.5545, lon=-68.6737, tipo='Atração', dias=1, lateral=True, opcional=True, km_extra=115,
+      resumo='Ruínas da capital de uma civilização mais antiga que os incas, Patrimônio da Humanidade, com a Porta do Sol e o templo de Kalasasaya.',
+      fazer=['Porta do Sol e Kalasasaya', 'Pirâmide de Akapana e os museus do sítio'],
+      dica='Desvio opcional: uns 57 km de El Alto pelo altiplano, quase plano. Se preferir, vá de van ou ônibus saindo de La Paz e volte no mesmo dia.'),
+])
+_insert_after(INT, 'espinar', [
+ dict(id='chivay', nome='Chivay e o Cânion do Colca', lat=-15.6375, lon=-71.6011, tipo='Imperdível', dias=2,
+      resumo='Vila na cabeceira do Cânion do Colca, um dos mais fundos do mundo, com terraços incas, vilas coloniais e termas.',
+      fazer=['Termas de La Calera', 'Vilas de Yanque e Coporaque, com os terraços de cultivo', 'No caminho: o vale de Sibayo e os "castillos" de pedra de Callalli'],
+      dica='Para Arequipa, a estrada sobe ao Mirador de los Andes, em Patapampa, a quase 4.900 m, o ponto mais alto da rota, e depois desce mais de 100 km. O vale cobra um bilhete turístico na entrada.'),
+ dict(id='cruz-condor', nome='Cruz del Cóndor', lat=-15.6112, lon=-71.9059, tipo='Imperdível', dias=1, lateral=True, km_extra=84,
+      resumo='Mirante na beira do Cânion do Colca, onde os condores sobem com o ar quente da manhã.',
+      fazer=['Condores passando perto, mais ou menos das 8h às 10h', 'Vilas de Maca e Pinchollo no caminho', 'Opcional: descer a pé de Cabanaconde até o Oásis de Sangalle, no fundo do cânion'],
+      dica='São uns 42 km de Chivay, subindo uns 900 m. Para chegar cedo, durma em Cabanaconde, logo depois do mirante, ou pegue o ônibus da madrugada com a bike.'),
+])
+_insert_after(INT, 'san-pedro', [
+ dict(id='cejar', nome='Laguna Cejar e Laguna Piedra', lat=-23.0536, lon=-68.2093, tipo='Bate-volta', dias=1, lateral=True, km_extra=36,
+      resumo='Lagoas de sal no meio do Salar do Atacama. Na Laguna Piedra a água é tão salgada que você boia sem esforço, como no Mar Morto.',
+      fazer=['Boiar na Laguna Piedra (na Cejar o banho é proibido)', 'Ojos del Salar, dois poços de água doce ali perto', 'Pôr do sol no salar'],
+      dica='Uns 18 km de San Pedro por estrada de terra e sal, quase plana. Vá à tarde, com água, protetor e toalha, e pague a entrada na portaria. Não precisa saber nadar, a água te segura, mas entre devagar e não mergulhe a cabeça: o sal arde nos olhos e em qualquer machucado.'),
+])
+_insert_after(INT, 'purmamarca', [
+ dict(id='humahuaca', nome='Quebrada de Humahuaca', lat=-23.2053, lon=-65.3506, tipo='Imperdível', dias=3, lateral=True, km_extra=140,
+      resumo='Vale de montanhas coloridas e vilas de adobe, Patrimônio da Humanidade, de Purmamarca até Humahuaca.',
+      fazer=['Pucará de Tilcara, a fortaleza pré-inca', 'Humahuaca e o Monumento à Independência', 'Serranía de Hornocal, a montanha de 14 cores'],
+      dica='Uns 70 km de subida suave pela Ruta 9 até Humahuaca, e a volta é quase toda descida. O Hornocal fica a uns 25 km de Humahuaca, por terra, subindo até uns 4.300 m: vá de bike sem bagagem ou de 4x4, à tarde, quando o sol bate nas cores.'),
+])
+_insert_after(INT, 'cochrane', [
+ dict(id='tortel', nome='Caleta Tortel', lat=-47.795, lon=-73.53, tipo='Atração', dias=1, lateral=True, opcional=True, km_extra=46,
+      resumo='Vila de pescadores sem ruas: as casas são ligadas por quilômetros de passarelas de cipreste, perto da foz do Rio Baker.',
+      fazer=['Andar pelas passarelas e escadas de madeira', 'Mirante sobre a foz do Rio Baker', 'Opcional: barco até a Isla de los Muertos'],
+      dica='Desvio opcional de uns 23 km de rípio desde a Carretera, entre Cochrane e Villa O\'Higgins. A bike fica no estacionamento da entrada: na vila só se anda a pé.'),
+])
+_insert_after(INT, 'porvenir', [
+ dict(id='pinguino-rei', nome='Pinguins-rei (Bahía Inútil)', lat=-53.4608, lon=-69.3052, tipo='Bate-volta', dias=1, lateral=True, km_extra=35,
+      resumo='A única colônia de pinguins-rei da América do Sul, numa reserva à beira da Bahía Inútil.',
+      fazer=['Ver os pinguins-rei do mirante da reserva (leve binóculo)', 'Centro de visitantes'],
+      dica='Fica a uns 17 km da estrada para San Sebastián, saindo no cruzamento de Onaisín. A visita tem limite de pessoas por dia e entrada paga: reserve antes de sair de Porvenir.'),
+])
+_insert_after(INT, 'bh', [
+ dict(id='serra-cipo', nome='Serra do Cipó', lat=-19.3436, lon=-43.626, tipo='Imperdível', dias=2,
+      resumo='Parque nacional de campos de pedra, cânions e cachoeiras, perto de BH.',
+      fazer=['Cachoeira da Farofa e Cânion das Bandeirinhas, no parque nacional', 'Cachoeira Véu da Noiva', 'Pedalar nas estradas de terra da serra'],
+      dica='Daqui até Diamantina você segue o Caminho dos Diamantes da Estrada Real, com muita subida. Em setembro, fim da seca, as cachoeiras ficam mais fracas e pode ter queimada.'),
+ dict(id='conceicao-md', nome='Conceição do Mato Dentro', lat=-19.0378, lon=-43.425, tipo='Atração', dias=1,
+      resumo='Cidade histórica da Estrada Real e base para a Cachoeira do Tabuleiro.',
+      fazer=['Cachoeira do Tabuleiro, a mais alta de Minas, com uns 273 m de queda', 'Centro histórico'],
+      dica='O Tabuleiro fica a uns 20 km da cidade, com trilha até o poço. Deixe a bagagem na pousada.'),
+ dict(id='serro', nome='Serro', lat=-18.6047, lon=-43.3797, tipo='Atração', dias=0,
+      resumo='Vila colonial do século XVIII, terra do queijo do Serro.',
+      fazer=['Centro histórico e Igreja do Carmo', 'Queijo do Serro direto do produtor'],
+      dica='Daqui a Diamantina são uns 60 km de serra, com mais de 1.500 m de subida.'),
+ dict(id='diamantina', nome='Diamantina', lat=-18.2413, lon=-43.6006, tipo='Imperdível', dias=2,
+      resumo='Cidade do ciclo do diamante, Patrimônio da Humanidade, terra de Chica da Silva e de JK.',
+      fazer=['Centro histórico, Casa de Chica da Silva e Casa de JK', 'Vesperata, a serenata das sacadas, em alguns sábados de março a outubro', 'Caminho dos Escravos'],
+      dica='Daqui para o norte a serra vai ficando para trás, rumo a Bocaiúva e Montes Claros.'),
+ dict(id='bocaiuva', nome='Bocaiúva', lat=-17.1078, lon=-43.815, tipo='Apoio', dias=0,
+      resumo='Cidade de apoio no caminho de Diamantina para Montes Claros.',
+      fazer=['Reabastecer'],
+      dica='O trecho desde Diamantina tem uns 170 km e quase nenhuma cidade. Calor do sertão de volta: pedale cedo.'),
+])
+
+# ajustes nas paradas que já existiam
+_byid = {x['id']: x for x in INT}
+_set('arequipa', fazer=['Mosteiro de Santa Catalina', 'Mirante de Yanahuara com o vulcão Misti ao fundo'])
+_set('espinar', dica='Trecho alto, frio e isolado até Sibayo e Chivay. Leve comida e água para 2 dias.')
+_set('san-pedro', fazer=['Vale da Lua ao pôr do sol (dá para ir de bike)', 'Gêiseres del Tatio ao amanhecer (passeio de van, sai de madrugada)', 'Lagunas Altiplânicas', 'Observação de estrelas'])
+_set('purmamarca', fazer=['Paseo de los Colorados', 'Cerro de los Siete Colores com a luz da manhã'])
+_set('uyuni', dica='Depois do salar a rota sobe para o norte, rumo a Oruro e La Paz. As lagunas do sul (Colorada e Verde) ficam como passeio opcional de jipe.')
+_set('cochrane', dica='Daqui a Villa O\'Higgins são uns 230 km de rípio com pouquíssimo apoio. No meio fica a entrada para Caleta Tortel.')
+_set('villa-ohiggins', dica='O barco para Candelario Mancilla sai de 1º de novembro a 30 de abril, em poucos dias da semana (em março e abril, só às segundas e quintas). Confirme as datas e reserve antes.')
+_set('trelew', fazer=['Museu Paleontológico Egidio Feruglio', 'Gaiman, a vila galesa do chá, a uns 17 km'],
+     dica='A pinguinera de Punta Tombo, uns 110 km ao sul, só tem pinguins de setembro a abril. Em maio, quando você passa, eles já foram embora.')
+_set('madryn', fazer=['Lobos-marinhos de Punta Loma, a uns 15 km', 'Mergulho com leões-marinhos'],
+     dica='Pelo cronograma você passa em maio, entre a época das orcas (até abril) e a das baleias (de junho a dezembro; as primeiras às vezes chegam no fim de maio).')
+_set('valdes', tipo='Atração', opcional=True,
+     dica='Desvio opcional: em maio não tem baleias nem pinguins. Ficam elefantes e lobos-marinhos, guanacos e a paisagem. Só vale se as baleias já tiverem chegado; pergunte em Madryn.')
+_set('bh', dica='Saia pela MG-010 rumo à Serra do Cipó. Dentro de BH, use as ciclovias da Pampulha: a cidade é muito montanhosa.')
+_set('posadas', uf_fix='AR5')
+_set('futaleufu', uf_fix='CL2')
+
+# paradas do começo da rota (Bahia e Maranhão), que o build.py monta antes de juntar o INT
+def POST(stops):
+    by = {x['id']: x for x in stops}
+    by['salvador']['dica'] = ('Guarde a bike na hospedagem para andar no centro histórico. A terça de Carnaval de 2027 é 9 de fevereiro e, em Salvador, '
+                              'a festa começa na quinta antes. Pelo cronograma você chega logo antes: ou fica para o Carnaval, ou siga cedo para o norte, '
+                              'porque a hospedagem fica cara e lotada até na Linha Verde.')
+    by['lencois-ma']['dica'] = ('Pelo cronograma você chega no fim de abril: as lagoas costumam estar com metade a dois terços da água, e abril é o mês que mais chove. '
+                                'Bike não entra no parque (carro só com autorização do ICMBio): vá de 4x4 credenciado até as lagoas e ande nas dunas. '
+                                'A travessia a pé de 3 dias exige guia.')
+    by['barreirinhas']['dica'] = 'Deixe a bike na pousada: os passeios para as lagoas são de 4x4. Para Atins não tem asfalto; vá de barco pelo Rio Preguiças ou de 4x4.'
+    k = next(i for i, x in enumerate(stops) if x['id'] == 'salvador') + 1
+    stops[k:k] = [dict(id='morro-sp', uf='BA', nome='Morro de São Paulo e Boipeba', lat=-13.378, lon=-38.913, tipo='Atração', dias=3, lateral=True, opcional=True, km_extra=0,
+                       resumo='Ilhas sem carros ao sul de Salvador, com praias de água morna e piscinas naturais.',
+                       fazer=['Praias de Morro de São Paulo', 'Boipeba e a Praia de Moreré', 'Piscinas naturais na maré baixa'],
+                       dica='Desvio opcional, sem a bike: catamarã de Salvador até Morro (umas 2 h) e barco até Boipeba. Na semana do Carnaval fica lotado e caro.')]
+    return stops
+
+EPOCAS['lencois-ma'] = {'m': [5, 6, 7, 8, 9], 't': 'Lagoas cheias de maio a setembro (em abril ficam pela metade e chove muito)'}
+EPOCAS['villa-ohiggins'] = {'m': [11, 12, 1, 2, 3, 4], 't': "Barco do Lago O'Higgins: 1º de novembro a 30 de abril"}
+EPOCAS['ushuaia'] = {'m': [11, 12, 1, 2, 3, 4], 't': 'Terra do Fogo: novembro a abril (em abril já é outono: frio de 2 a 7 °C e as florestas avermelhadas)'}
+EPOCAS['humahuaca'] = {'m': [4, 5, 6, 7, 8, 9, 10, 11], 't': 'Seco de abril a novembro; no verão a chuva às vezes fecha a Ruta 9'}

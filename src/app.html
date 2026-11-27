@@ -71,6 +71,7 @@ h1 span{color:var(--route)}
 .legend i.b{border-top:2.5px dotted var(--side)}
 .legend i.a{border-top:3px dotted var(--route)}
 .legend i.f{border-top:3px solid var(--muted);opacity:.55}
+.legend i.o{border-top:0;height:3px;background:repeating-linear-gradient(90deg,var(--side) 0 6px,transparent 6px 9px,var(--side) 9px 11px,transparent 11px 14px)}
 .profile{grid-column:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px 4px;min-width:0}
 .profile .hd{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);gap:10px}
 .profile .hd b{font-family:var(--f-mono);color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
@@ -106,6 +107,8 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
 .item.big .dot{background:var(--route);color:var(--panel)}
 .item.lat{padding-left:70px}
 .item.lat .dot{left:36px;width:16px;height:16px;top:14px;border-color:var(--side);border-style:dashed;background:var(--panel)}
+.item.opc .dot{border-style:dotted}
+.item.opc .row .n{font-weight:500}
 .item.warn .dot{border-color:var(--warn);color:var(--warn)}
 .item.done .dot{border-color:var(--good);color:var(--good)}
 .item.big.done .dot{background:var(--good);color:var(--panel)}
@@ -116,6 +119,7 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
 .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;background:var(--chip);border-radius:4px;padding:1px 6px;color:var(--ink)}
 .tag.lat{color:var(--side)}
 .tag.warn{color:var(--warn)}
+.tag.opc{background:none;border:1px dashed var(--side);color:var(--side)}
 .dt{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .ep{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;background:var(--chip)}
 .ep.ok{color:var(--good)}
@@ -214,7 +218,7 @@ aside{grid-column:2;grid-row:2/4;min-height:0;display:flex;flex-direction:column
       <button class="zbtn" id="zout" aria-label="Afastar">−</button>
       <button class="zbtn" id="zfit" aria-label="Enquadrar a rota" title="Enquadrar">⤢</button>
     </div>
-    <div class="legend"><span><i></i>Rota</span><span><i class="d"></i>Bate-volta</span><span><i class="b"></i>Barco</span><span id="lg-aprox"><i class="a"></i>Aproximado</span><span id="lg-prog" hidden><i class="f"></i>Já pedalado</span></div>
+    <div class="legend"><span><i></i>Rota</span><span><i class="d"></i>Bate-volta</span><span id="lg-opc"><i class="o"></i>Desvio opcional</span><span><i class="b"></i>Barco</span><span id="lg-aprox"><i class="a"></i>Aproximado</span><span id="lg-prog" hidden><i class="f"></i>Já pedalado</span></div>
   </div>
 
   <section class="profile" aria-label="Perfil de altitude">
@@ -271,8 +275,8 @@ const UFS = DATA.ufs;
 const ufBy = Object.fromEntries(UFS.map(u => [u.sigla, u]));
 const ROUTE_UF = new Set(UFS.map(u => u.sigla));
 const BIG = new Set(['Partida', 'Base', 'Divisa', 'Imperdível', 'Pausa', 'Chegada']);
-const MAJOR = new Set(['tanque-novo', 'lencois', 'salvador', 'aracaju', 'maceio', 'caminho-moises', 'recife', 'joao-pessoa', 'natal', 'fortaleza', 'jeri', 'lencois-ma', 'sete-cidades', 'teresina', 'capivara', 'mateiros', 'alto-paraiso', 'brasilia', 'chapada-guimaraes', 'cuiaba', 'transpantaneira', 'san-ignacio-v', 'santa-cruz', 'sucre', 'potosi', 'salar', 'san-pedro', 'purmamarca', 'salta', 'cafayate', 'talampaya', 'mendoza', 'malargue', 'sete-lagos', 'bariloche', 'esquel', 'futaleufu', 'coyhaique', 'cerro-castillo', 'villa-ohiggins', 'chalten', 'calafate', 'perito-moreno', 'paine', 'natales', 'punta-arenas', 'ushuaia', 'valdes', 'buenos-aires', 'trinidad', 'cataratas', 'la-paz', 'copacabana-bo', 'puno', 'cusco', 'machu-picchu', 'arequipa', 'arica', 'colonia', 'montevideo', 'curitiba', 'paraty', 'rio', 'ouro-preto', 'tiradentes', 'bh', 'montes-claros']);
-const OV = new Set(['tanque-novo', 'salvador', 'recife', 'fortaleza', 'lencois-ma', 'mateiros', 'brasilia', 'cuiaba', 'santa-cruz', 'salar', 'san-pedro', 'mendoza', 'bariloche', 'chalten', 'ushuaia', 'valdes', 'buenos-aires', 'cataratas', 'rio', 'ouro-preto', 'la-paz', 'cusco', 'machu-picchu', 'arequipa', 'montevideo']);
+const MAJOR = new Set(['tanque-novo', 'lencois', 'salvador', 'aracaju', 'maceio', 'caminho-moises', 'recife', 'joao-pessoa', 'natal', 'fortaleza', 'jeri', 'lencois-ma', 'sete-cidades', 'teresina', 'capivara', 'mateiros', 'alto-paraiso', 'brasilia', 'chapada-guimaraes', 'cuiaba', 'transpantaneira', 'san-ignacio-v', 'santa-cruz', 'sucre', 'potosi', 'salar', 'san-pedro', 'purmamarca', 'salta', 'cafayate', 'talampaya', 'mendoza', 'malargue', 'sete-lagos', 'bariloche', 'esquel', 'futaleufu', 'coyhaique', 'cerro-castillo', 'villa-ohiggins', 'chalten', 'calafate', 'perito-moreno', 'paine', 'natales', 'punta-arenas', 'ushuaia', 'valdes', 'buenos-aires', 'trinidad', 'cataratas', 'la-paz', 'copacabana-bo', 'puno', 'cusco', 'machu-picchu', 'arequipa', 'chivay', 'humahuaca', 'diamantina', 'goias', 'arica', 'colonia', 'montevideo', 'curitiba', 'paraty', 'rio', 'ouro-preto', 'tiradentes', 'bh', 'montes-claros']);
+const OV = new Set(['tanque-novo', 'salvador', 'recife', 'fortaleza', 'lencois-ma', 'mateiros', 'brasilia', 'cuiaba', 'santa-cruz', 'salar', 'san-pedro', 'mendoza', 'bariloche', 'chalten', 'ushuaia', 'buenos-aires', 'cataratas', 'rio', 'ouro-preto', 'la-paz', 'cusco', 'machu-picchu', 'arequipa', 'montevideo']);
 const COUNTRIES = new Set(['BO', 'PEX', 'CL', 'CL2', 'CL3', 'CL4', 'AR', 'AR2', 'AR3', 'AR4', 'AR5', 'UY', 'PY']);
 const paisOf = c => c.startsWith('AR') ? 'Argentina' : c.startsWith('CL') ? 'Chile' : c === 'PEX' ? 'Peru' : c === 'BO' ? 'Bolívia' : c === 'UY' ? 'Uruguai' : c === 'PY' ? 'Paraguai' : 'Brasil';
 const norm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -292,13 +296,14 @@ const kmRange = () => scope === 'NE' ? [0, DATA.perfil.length - 1] : [ufBy[scope
 
 /* ---------- cronograma: configurações e cálculo ---------- */
 const CFG_KEY = 'cfg-viagem-v1';
-const cfg = {start: '2027-01-04', pace: 75, rest: 0.6};
-try { const sv = JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); if (sv) Object.assign(cfg, sv); } catch (e) {}
+const cfg = {start: '2027-01-07', pace: 75, rest: 0.6};
+try { const sv = JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); if (sv) { if (sv.start === '2027-01-04') sv.start = '2027-01-07'; Object.assign(cfg, sv); } } catch (e) {}
 const saveCfg = () => { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {} };
 const restOf = s => Math.round((s.dias || 0) * cfg.rest);
+const latDays = s => Math.max(restOf(s), Math.ceil((s.km_extra || 0) / cfg.pace));
 const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const MESL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-function parseISO(t) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t || ''); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : Date.UTC(2027, 0, 4); }
+function parseISO(t) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t || ''); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : Date.UTC(2027, 0, 7); }
 let SCH = null;
 function computeSchedule() {
   const pace = cfg.pace;
@@ -312,6 +317,7 @@ function computeSchedule() {
   };
   for (const s of stops) {
     const r = restOf(s);
+    if (s.opcional) { at[s.id] = at[s.de] != null ? at[s.de] : day; continue; }
     if (s.lateral) {
       close();
       const add = Math.max(r, Math.ceil((s.km_extra || 0) / pace));
@@ -366,20 +372,21 @@ function renderHeader() {
   const u = ufBy[scope];
   const sts = stops.filter(inScope);
   const km = u ? u.km : DATA.regiao.km;
-  const lat = sts.reduce((a, s) => a + (s.km_extra || 0), 0);
+  const lat = sts.reduce((a, s) => a + (s.opcional ? 0 : s.km_extra || 0), 0);
   const sub = u ? u.subida : DATA.regiao.subida;
-  const dias = sts.reduce((a, s) => a + (s.lateral ? Math.max(restOf(s), Math.ceil((s.km_extra || 0) / cfg.pace)) : restOf(s)), 0);
+  const dias = sts.reduce((a, s) => a + (s.opcional ? 0 : s.lateral ? latDays(s) : restOf(s)), 0);
   const bk = DATA.etapas.filter(e => e.barco && (scope === 'NE' || byId[e.para].uf === scope)).reduce((a, e) => a + e.barco.km, 0);
   document.getElementById('stats').innerHTML = [
     [fmt(km) + ' km', 'de bike'], lat ? ['+' + fmt(lat) + ' km', 'bate-voltas'] : null, bk > 0 ? ['~' + fmt(bk) + ' km', 'de barco'] : null,
-    ['≈' + fmt(Math.round(sub / 100) * 100) + ' m', 'de subida'], [sts.length, 'paradas'], [dias, 'dias parados']
+    ['≈' + fmt(Math.round(sub / 100) * 100) + ' m', 'de subida'], [sts.filter(s => !s.opcional).length, 'paradas'], [dias, 'dias parados']
   ].filter(Boolean).map(([v, l]) => `<div class="stat"><span class="v">${v}</span><span class="l">${l}</span></div>`).join('');
   document.getElementById('crumbs').innerHTML = '<span>América do Sul</span><span class="sep">›</span>' + (COUNTRIES.has(scope) ? `<b>${u.nome}</b>` : u ? `<span>Brasil</span><span class="sep">›</span><b>${u.nome}</b>` : '<b>Rota inteira</b>');
   document.getElementById('h1').innerHTML = u ? `${u.nome} <span>de bike</span>` : 'Volta pela <span>América do Sul</span>';
   document.getElementById('ufbar').innerHTML = [['NE', 'Tudo', DATA.regiao.km], ...UFS.map(u => [u.sigla, (COUNTRIES.has(u.sigla) || u.sigla.length > 2) ? u.nome : u.sigla, u.km])]
     .map(([k, n, km]) => `<button data-uf="${k}" aria-pressed="${scope === k}">${n}<small>${fmt(km)} km</small></button>`).join('');
   const on = sts.filter(s => !s.lateral).length;
-  document.getElementById('acount').textContent = `${on} paradas na rota` + (sts.length - on ? ` · ${sts.length - on} extras` : '');
+  const nOpc = sts.filter(s => s.opcional).length, nLat = sts.length - on - nOpc;
+  document.getElementById('acount').textContent = `${on} paradas na rota` + (nLat ? ` · ${nLat} extras` : '') + (nOpc ? ` · ${nOpc} opcionais` : '');
   document.getElementById('ptitle').textContent = 'Perfil de altitude' + (u ? ' · ' + u.nome : '');
   document.getElementById('gpxbtn').textContent = scope === 'NE' ? 'Baixar GPX da rota' : 'Baixar GPX do trecho';
 }
@@ -551,7 +558,7 @@ function layout() {
   const apLL = DATA.linha_aprox.map(l => l.map(ll));
   aHalo = L.polyline(apLL, Object.assign({weight: 7, opacity: .9}, o)).addTo(map);
   aLine = L.polyline(apLL, Object.assign({weight: 3.2, dashArray: '2 7'}, o)).addTo(map);
-  latLines = Object.values(DATA.laterais).map(c => L.polyline(c.map(ll), Object.assign({weight: 2.6, dashArray: '6 5'}, o)).addTo(map));
+  latLines = Object.entries(DATA.laterais).map(([id, c]) => { const op = byId[id] && byId[id].opcional; return L.polyline(c.map(ll), Object.assign({weight: op ? 2.4 : 2.6, dashArray: op ? '8 5 1 5' : '6 5', opacity: op ? .85 : 1}, o)).addTo(map); });
   boatLines = DATA.barcos.map(c => L.polyline(c.map(ll), Object.assign({weight: 2.8, dashArray: '1 7'}, o)).addTo(map));
   hiLine = L.polyline([], Object.assign({weight: 9, opacity: .35}, o)).addTo(map);
   townG = L.layerGroup();
@@ -590,7 +597,7 @@ function stopStyle(s) {
   const c = colors(), big = BIG.has(s.tipo), sel = selected === s.id;
   const stroke = done.has(s.id) ? c.good : s.lateral ? c.side : s.tipo === 'Atenção' ? c.warn : c.route;
   const z = map ? map.getZoom() : 4, zb = z < 5 ? 0 : z < 8 ? 1 : 2;
-  return {radius: (big ? [4.5, 6, 7] : [3, 4.5, 5.5])[zb], color: sel ? c.panel : stroke, weight: sel ? 3 : [1.6, 2.2, 2.4][zb], opacity: 1, fillColor: sel ? c.ink : big ? c.route : c.panel, fillOpacity: 1};
+  return {radius: (big ? [4.5, 6, 7] : [3, 4.5, 5.5])[zb], color: sel ? c.panel : stroke, weight: sel ? 3 : [1.6, 2.2, 2.4][zb], opacity: 1, fillColor: sel ? c.ink : big ? c.route : c.panel, fillOpacity: 1, dashArray: s.opcional && !sel ? '2 2' : null};
 }
 function labelTier(s) {
   if (scope === 'NE' && OV.has(s.id)) return 3.5;
@@ -738,9 +745,10 @@ function renderList() {
     const e = etapaPara[s.id];
     const leg = query ? '' : e && e.barco ? `<div class="leg"><span class="txt">${e.barco.texto || '⛴ barco'}</span><span>~<b>${fmt(e.barco.km)}</b> km</span>${e.barco.dias ? `<span>~<b>${e.barco.dias}</b> dias</span>` : ''}</div>` : e && !isLat ? `<div class="leg"><span><b>${fmt1(e.km)}</b> km</span><span>↑ <b>${fmt(Math.round(e.subida / 10) * 10)}</b> m</span><span>máx <b>${fmt(e.max)}</b> m</span>${e.agua != null ? `<span class="agua ${e.agua > 10 && !e.rios ? 'alto' : ''}" title="Água para o maior trecho sem cidade (${e.gap} km)">💧 ${aguaTxt(e)}</span>` : ''}</div>` : '';
     const open = selected === s.id;
-    const r = restOf(s);
+    const opc = !!s.opcional;
+    const r = opc ? latDays(s) : restOf(s);
     const extra = isLat ? (s.km_extra ? `<span>${s.km_extra} km ida e volta</span>` : `<span>passeio sem bike</span>`) : (s.ele != null ? `<span>${fmt(s.ele)} m</span>` : '');
-    const meta = `<span class="tag ${isLat ? 'lat' : ''} ${s.tipo === 'Atenção' ? 'warn' : ''}">${s.tipo}</span><span class="dt">≈ ${fD(SCH.at[s.id])}</span>` + (r ? `<span>${r} ${r > 1 ? 'dias' : 'dia'} parado</span>` : '') + extra + chipEpoca(s);
+    const meta = `<span class="tag ${isLat ? 'lat' : ''} ${s.tipo === 'Atenção' ? 'warn' : ''}">${s.tipo}</span>` + (opc ? `<span class="tag opc">Opcional</span>` : '') + `<span class="dt">≈ ${fD(SCH.at[s.id])}</span>` + (r ? (opc ? `<span>+${r} ${r > 1 ? 'dias' : 'dia'} se fizer</span>` : `<span>${r} ${r > 1 ? 'dias' : 'dia'} parado</span>`) : '') + extra + chipEpoca(s);
     let card = '';
     if (open) {
       const ce = etapaPara[s.id];
@@ -751,14 +759,15 @@ function renderList() {
         ${caminho}${dayPlan(ce)}<p>${s.resumo}</p>
         <ul>${s.fazer.map(f => `<li>${f}</li>`).join('')}</ul>
         <div class="dica">${s.dica}</div>
-        ${ep ? `<p class="caminho">Chegada estimada: <b>${fD(SCH.at[s.id])}</b>. ${ep.t}.</p>` : ''}
+        ${opc ? `<p class="caminho"><b>Desvio opcional:</b> fica fora do cronograma e da conta de km. Se fizer, a viagem fica uns <b>${r} ${r > 1 ? 'dias' : 'dia'}</b> mais longa.</p>` : ''}
+        ${ep ? `<p class="caminho">${opc ? 'Passando por perto' : 'Chegada estimada'}: <b>${fD(SCH.at[s.id])}</b>. ${ep.t}.</p>` : ''}
         <div class="acts">
           <button data-done="${s.id}" aria-pressed="${done.has(s.id)}">${done.has(s.id) ? 'Visitado ✓' : 'Marcar como visitado'}</button>
           ${pv ? `<a href="${gdir(pv, s)}" target="_blank" rel="noopener">Trecho no Google Maps</a>` : ''}
           <a href="${gmaps(s)}" target="_blank" rel="noopener">Local no Google Maps</a>
         </div></div>`;
     }
-    const cls = ['item', s.tipo === 'Atenção' ? 'warn' : '', isLat ? 'lat' : '', BIG.has(s.tipo) ? 'big' : '', done.has(s.id) ? 'done' : '', idx === sts.length - 1 ? 'last' : ''].join(' ');
+    const cls = ['item', s.tipo === 'Atenção' ? 'warn' : '', isLat ? 'lat' : '', opc ? 'opc' : '', BIG.has(s.tipo) ? 'big' : '', done.has(s.id) ? 'done' : '', idx === sts.length - 1 ? 'last' : ''].join(' ');
     return `${hd}${leg}<div class="${cls}" id="it-${s.id}">
       <span class="dot" aria-hidden="true">${isLat ? '' : numOf[s.id]}</span>
       <button class="row" data-id="${s.id}" aria-expanded="${open}">
@@ -768,7 +777,7 @@ function renderList() {
   }).join('') + (scope === 'NE' && !query ? `
     <div class="next"><div class="ttl">Rota completa</div>
       A volta fecha em <b>Tanque Novo</b>. Se quiser mudar algum trecho, é só pedir que eu redesenho essa parte.</div>` : '') + `
-    <div class="foot">Datas: estimativa da aba Cronograma (${cfg.pace} km/dia, ${Math.round(cfg.rest * 100)}% dos dias parados sugeridos). 💧 Água: conta 1 litro a cada 15 km no calor (20 km na serra e no frio) para o maior trecho sem cidade, mais meio litro de reserva; se o trecho passa de 90 km, soma 3 L para acampar. Só cidades e vilas conhecidas entram na conta; postos de gasolina, fazendas e povoados pequenos não, então na prática costuma ter mais apoio. Distâncias e altitudes calculadas sobre a rota de bike do komoot. Onde o komoot não tem a estrada, o traçado é aproximado (linha pontilhada) e a subida fica subestimada.</div>`;
+    <div class="foot">Datas: estimativa da aba Cronograma (${cfg.pace} km/dia, ${Math.round(cfg.rest * 100)}% dos dias parados sugeridos). Os desvios opcionais (linha de traço e ponto) ficam fora do cronograma e dos totais. 💧 Água: conta 1 litro a cada 15 km no calor (20 km na serra e no frio) para o maior trecho sem cidade, mais meio litro de reserva; se o trecho passa de 90 km, soma 3 L para acampar. Só cidades e vilas conhecidas entram na conta; postos de gasolina, fazendas e povoados pequenos não, então na prática costuma ter mais apoio. Distâncias e altitudes calculadas sobre a rota de bike do komoot. Onde o komoot não tem a estrada, o traçado é aproximado (linha pontilhada) e a subida fica subestimada.</div>`;
 }
 list.addEventListener('click', ev => {
   const d = ev.target.closest('[data-done]');
@@ -841,13 +850,13 @@ paceSel.innerHTML = Array.from({length: 11}, (_, i) => 50 + i * 5).map(v => `<op
 const inStart = document.getElementById('cfg-start'), inRest = document.getElementById('cfg-rest');
 function syncCfgInputs() { inStart.value = cfg.start; paceSel.value = String(cfg.pace); inRest.value = String(cfg.rest); }
 [inStart, paceSel, inRest].forEach(el => el.addEventListener('change', () => {
-  cfg.start = /^\d{4}-\d{2}-\d{2}$/.test(inStart.value) ? inStart.value : '2027-01-04';
+  cfg.start = /^\d{4}-\d{2}-\d{2}$/.test(inStart.value) ? inStart.value : '2027-01-07';
   cfg.pace = +paceSel.value || 75; cfg.rest = +inRest.value || 0.6;
   saveCfg(); computeSchedule(); renderHeader(); renderList(); renderCrono();
 }));
 function renderCrono() {
   const body = document.getElementById('crono-body');
-  const keys = Object.keys(DATA.epocas || {}).filter(id => byId[id]);
+  const keys = Object.keys(DATA.epocas || {}).filter(id => byId[id] && !byId[id].opcional);
   const eps = keys.map(id => ({s: byId[id], ep: epocaOf(byId[id])})).sort((a, b) => SCH.at[a.s.id] - SCH.at[b.s.id]);
   const bad = eps.filter(x => x.ep && !x.ep.ok);
   const tiles = [
@@ -870,9 +879,9 @@ function renderCrono() {
       const mo = SCH.months[SCH.mIdx[key]];
       h += `<div class="mes">${MESL[d.getUTCMonth()]} de ${d.getUTCFullYear()}<span>${fmt(mo ? mo.km : 0)} km no mês</span></div>`;
     }
-    h += `<button class="crow ${BIG.has(s.tipo) ? 'k' : ''}" data-go="${s.id}"><span class="cd">${fDs(SCH.at[s.id])}</span><span class="cn">${s.lateral ? '↳ ' : ''}${s.nome}${chipEpoca(s)}</span></button>`;
+    h += `<button class="crow ${BIG.has(s.tipo) ? 'k' : ''}" data-go="${s.id}"><span class="cd">${fDs(SCH.at[s.id])}</span><span class="cn">${s.lateral ? '↳ ' : ''}${s.nome}${s.opcional ? ' <small>(opcional)</small>' : chipEpoca(s)}</span></button>`;
   }
-  h += `<p class="cnote">Como calculo: ${cfg.pace} km por dia no plano, e cada 1.000 m de subida conta como 10 km a mais. Os dias parados são ${Math.round(cfg.rest * 100)}% dos que sugeri em cada parada; os bate-voltas usam os dias sugeridos ou o tempo de pedalar ida e volta. As travessias de barco somam os dias da travessia. É uma estimativa para planejar: muda o ritmo e os descansos para ver o efeito nas épocas.</p>`;
+  h += `<p class="cnote">Como calculo: ${cfg.pace} km por dia no plano, e cada 1.000 m de subida conta como 10 km a mais. Os dias parados são ${Math.round(cfg.rest * 100)}% dos que sugeri em cada parada; os bate-voltas usam os dias sugeridos ou o tempo de pedalar ida e volta, e os desvios opcionais não entram. As travessias de barco somam os dias da travessia. É uma estimativa para planejar: muda o ritmo e os descansos para ver o efeito nas épocas.</p>`;
   body.innerHTML = h;
   drawKmMes();
 }
@@ -926,7 +935,7 @@ function renderNums() {
     ['Países', rows.length, front + ' fronteiras cruzadas'],
     ['Subida total', fmt(Math.round(DATA.regiao.subida / 1000)) + ' mil m', '≈ ' + Math.round(DATA.regiao.subida / 8849) + ' vezes o Everest'],
     ['Ponto mais alto', fmt(P[hi][0]) + ' m', 'perto de ' + nearestStopAt(hi).nome],
-    ['Paradas', stops.length, onroute.length + ' na rota'],
+    ['Paradas', stops.filter(s => !s.opcional).length, onroute.length + ' na rota · ' + stops.filter(s => s.opcional).length + ' desvios opcionais'],
     ['Duração estimada', duracao(SCH.total), 'chegada em ' + fM(SCH.total)],
   ];
   let h = `<div class="tiles">${tiles.map(t => `<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="s">${t[2]}</div></div>`).join('')}</div>`;

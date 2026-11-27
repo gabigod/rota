@@ -17,7 +17,7 @@ Estes scripts montam `dados/rota.json` e os GPX de `public/gpx/` a partir das ro
 cd planejamento
 tar -xJf entradas.tar.xz
 mkdir -p towns/cj && tar -xzf towns/cities.json-1.1.50.tgz -C towns/cj
-cp s11.gpx geo/   # trecho Patacamaya-Sajama (fora do tar)
+cp *.gpx geo/      # trechos e desvios que ficam fora do tar (s11 em diante, q5, g10)
 python3 build.py geo data.json
 cp data.json ../dados/rota.json
 cp gpx/*.xml ../public/gpx/
