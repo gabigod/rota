@@ -12,7 +12,7 @@ export const CLIMAS = ['Sol', 'Nublado', 'Chuva', 'Vento forte', 'Frio', 'Calor'
 
 const padrao = () => ({
   v: 1,
-  cfg: { nome: 'Tem', inicio: '2027-01-04', metaKm: 26535, diasPlanejados: 626, odometro: 0, pais: 'Brasil', taxas: {}, ultimoBackup: null },
+  cfg: { nome: 'Tem', inicio: '2027-01-07', metaKm: 26622, diasPlanejados: 645, odometro: 0, pais: 'Brasil', taxas: {}, ultimoBackup: null },
   dias: [], gastos: [], pecas: []
 });
 
@@ -74,6 +74,10 @@ export async function carregar() {
   try {
     const e = await ler('estado');
     if (e && e.v === 1) { const p = padrao(); Object.assign(S, { ...p, ...e, cfg: { ...p.cfg, ...e.cfg } }); }
+    // rota revisada em 27/11/2026: saída em 7/1/2027, 26.622 km, 645 dias. Só troca o que ainda estava no padrão antigo.
+    if (S.cfg.inicio === '2027-01-04') S.cfg.inicio = '2027-01-07';
+    if (S.cfg.metaKm === 26535) S.cfg.metaKm = 26622;
+    if (S.cfg.diasPlanejados === 626) S.cfg.diasPlanejados = 645;
   } catch (e) { console.error(e); erroGravar = e; }
   try { navigator.storage?.persist?.(); } catch { /* sem problema */ }
   avisar();
